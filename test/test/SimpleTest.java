@@ -15,8 +15,16 @@ import raytracing.core.MortonCode.MortonData;
 public class SimpleTest {
     public static void main(String... args)
     {
-      
-        System.out.println(Integer.MAX_VALUE / 11);
-        System.out.println(0xFFFF);
+        int index = 127;
+        int div   = 64;
+        int value = 0;
+        
+        if (index % div == 0) { 
+            value = (int) ((Math.floor(index / div)) * div); 
+        } else { 
+            value = (int) ((Math.floor(index / div)) * div) + div; 
+        } 
+        
+        System.out.println(value);
     }
 }

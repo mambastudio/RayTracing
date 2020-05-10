@@ -6,10 +6,13 @@
 package raytracing.primitive;
 
 import coordinate.generic.AbstractMesh;
+import coordinate.generic.raytrace.AbstractAccelerator;
 import coordinate.list.CoordinateList;
 import coordinate.list.IntList;
 import coordinate.utility.Value2Df;
+import raytracing.accel.BVHAfra;
 import raytracing.accel.BVHKarras;
+import raytracing.accel.BVHPlocTree;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.Point2f;
@@ -24,7 +27,7 @@ import raytracing.core.coordinate.Vector3f;
  */
 public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f> implements Primitive
 {
-    private BVHKarras accelerator;
+    private AbstractAccelerator accelerator;
     private final BoundingBox bounds;
     
     public TriangleMesh()
@@ -138,13 +141,13 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
     }
 
     @Override
-    public BVHKarras getAccelerator() {
+    public AbstractAccelerator getAccelerator() {
         return accelerator;
     }
 
     @Override
     public void buildAccelerator() {
-        accelerator = new BVHKarras();
+        accelerator = new BVHAfra();
         accelerator.build(this);
     }
 

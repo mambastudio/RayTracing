@@ -166,4 +166,15 @@ public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, Boundi
         }
         return false;
     }
+    
+    public Vector3f extents()
+    {
+        return maximum.sub(minimum);
+    }
+    
+    @Override
+    public BoundingBox clone() 
+    {        
+        return new BoundingBox(minimum, maximum);
+    }
 }

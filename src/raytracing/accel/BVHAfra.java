@@ -30,7 +30,6 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
     
     @Override
     public void build(Primitive primitives) {
-        long time1 = System.nanoTime();
         
         this.primitives = primitives;  
         objects = new int[this.primitives.getCount()];
@@ -44,18 +43,7 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
         nodes[0] = root; 
         nodesPtr = 1;
         
-        subdivide(root, 0, 0, objects.length);
-        
-        long time2 = System.nanoTime();
-        
-        long timeDuration = time2 - time1;
-        String timeTaken= String.format("BVH build time: %02d min, %02d sec", 
-                TimeUnit.NANOSECONDS.toMinutes(timeDuration), 
-                TimeUnit.NANOSECONDS.toSeconds(timeDuration));
-        System.out.println(timeTaken);     
-        
-        for(BVHNode node : nodes)
-            System.out.println(node);
+        subdivide(root, 0, 0, objects.length);        
     }
     
     private void subdivide(BVHNode parent, int parentIndex, int start, int end)
@@ -91,10 +79,62 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
         //set the split dimensions
         int split_dim = bc.maximumExtentAxis();        
         int mid = getMid(bc, split_dim, start, end);
+        getSAHMid(bc, bb, split_dim, start, end);
                 
         //Subdivide
         subdivide(left, leftIndex, start, mid);
         subdivide(right, rightIndex, mid, end);
+    }
+    
+    //FIXME
+    private int getSAHMid(BoundingBox bc, BoundingBox bb, int split_dim, int start, int end)
+    {
+        int nBuckets = 12;
+        BucketInfo[] buckets = new BucketInfo[nBuckets];
+        for(int i = 0; i<nBuckets; i++)
+            buckets[i] = new BucketInfo();
+        
+        //initialize bucket info
+        for(int i = start; i<end; ++i)
+        {
+            int b = (int) (nBuckets * bc.offset(primitives.getCentroid(objects[i])).get(split_dim));
+            if(b == nBuckets) b = nBuckets - 1;
+            buckets[b].count++;
+            buckets[b].bounds.include(primitives.getBound(objects[i]));            
+        }
+        
+        //compute cost for splitting after each bucket
+        float[] cost = new float[nBuckets - 1];
+        for(int i = 0; i<nBuckets-1; ++i)
+        {
+            BoundingBox b0 = new BoundingBox();
+            BoundingBox b1 = new BoundingBox();
+            int count0 = 0, count1 = 0;
+            for(int j = 0; j<=i; ++j)
+            {
+                b0.include(buckets[j].bounds);
+                count0 += buckets[j].count;                
+            }
+            
+            for(int j = i+1; j<nBuckets; ++j)
+            {
+                b1.include(buckets[j].bounds);
+                count1 += buckets[j].count;
+            }
+            cost[i] = .125f + (count0 + b0.getArea() + 
+                               count1 + b1.getArea())/bb.getArea();
+            
+        }
+        
+        float minCost = cost[0];
+        int minCostSplitBucket = 0;
+        for(int i = 1; i<nBuckets-1; ++i)
+            if(cost[i]<minCost)
+            {
+                minCost = cost[i];
+                minCostSplitBucket = i;
+            }
+        return 0;
     }
     
     private int getMid(BoundingBox bc, int split_dim, int start, int end)
@@ -124,6 +164,59 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
     @Override
     public boolean intersect(Ray r, Intersection isect)
     {
+        int[] todo = new int[64];
+        int stackptr = 0;
+        boolean hit = false;
+        
+        while(stackptr >= 0)
+        {
+            int ni = todo[stackptr];
+            stackptr--;    
+            BVHNode node = nodes[ni];            
+            if(node.bounds.intersectP(r))
+            {     
+                if(node.isLeaf)
+                {                       
+                    if(primitives.intersect(r, objects[node.child], isect))
+                        hit |= true;
+                }
+                else
+                {  
+                    BVHNode left        = nodes[node.left];
+                    BVHNode right       = nodes[node.right];
+                
+                    float[] leftT       = new float[2];
+                    float[] rightT      = new float[2];
+                    boolean leftHit     = left.bounds.intersectP(r, leftT);
+                    boolean rightHit    = right.bounds.intersectP(r, rightT);
+                    
+                    if(!leftHit && !rightHit) 
+                        continue; 
+                
+                    if(leftHit && rightHit)
+                    {   
+                        if(rightT[0] < leftT[0])
+                        {
+                            todo[++stackptr] = node.right;
+                            todo[++stackptr] = node.left;
+                        }
+                        else
+                        {
+                            todo[++stackptr] = node.left;
+                            todo[++stackptr] = node.right;
+                        }
+                    }
+                    else
+                    {
+                        todo[++stackptr] = leftHit ? node.left : node.right;                   
+                    }               
+                    
+                    //System.out.println(todo[0]+ " " +todo[1]);
+                }         
+            }
+        }
+        return hit;
+        /*
         boolean hit = false;
         int nodeId = 0;
         long bitstack = 0;                      //be careful when you use a 32 bit integer. For deeper hierarchy traversal may lead into an infinite loop for certain scenes
@@ -160,6 +253,7 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
                     nodeId = leftHit ? node.left : node.right;                   
                 }                 
             }
+            
             if(!isInner(nodeId))
             {
                 BVHNode node    = nodes[nodeId];
@@ -181,8 +275,9 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
                 bitstack >>= 1;               //pop the bit in top most part os stack by right bit shifting
             }
             nodeId = siblingId;
-            bitstack ^= 1;           
-        }     
+            bitstack ^= 1;                    //turn bit to 0, we are done with it
+        }  
+*/
     }
     
     public boolean isInner(int nodeId)
@@ -205,6 +300,18 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
         return bound;
     }
     
+    private class BucketInfo
+    {
+        int count;
+        BoundingBox bounds;
+        
+        BucketInfo()
+        {
+            count = 0;
+            bounds = new BoundingBox();
+        }
+    }
+    
     public static class BVHNode
     {
         public BoundingBox bounds;
@@ -224,5 +331,5 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
             builder.append("\n");
             return builder.toString();
         }
-    }
+    }   
 }
