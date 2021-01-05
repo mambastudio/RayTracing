@@ -40,6 +40,11 @@ public class Point3f implements SCoord<Point3f, Vector3f> {
         return dest;
     }
     
+    public final Vector3f asVector3f()
+    {
+        return new Vector3f(x, y, z);
+    }
+    
     @Override
     public Point3f getSCoordInstance() {
         return new Point3f();

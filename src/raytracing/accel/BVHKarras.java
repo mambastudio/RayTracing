@@ -134,7 +134,7 @@ public class BVHKarras implements AbstractAccelerator<Ray, Intersection, Primiti
                 }
                 else
                 {
-                    // If the flag was 0 set it to 1 and bail out.
+                    // If the flag was 0 setValue it to 1 and bail out.
                     // The thread handling the second child will
                     // handle this node.
                     break;

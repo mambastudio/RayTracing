@@ -36,6 +36,11 @@ public class Vector3f  implements VCoord<Vector3f>{
     public Vector3f copy() {
         return new Vector3f(x, y, z);
     }
+    
+    public Point3f asPoint3f()
+    {
+        return new Point3f(x, y, z);
+    }
 
     @Override
     public float get(char axis) {

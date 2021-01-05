@@ -19,11 +19,10 @@ import raytracing.primitive.TriangleMesh;
 public class Test {
     public static void main(String... args)
     {
-        OBJParser parser = new OBJParser();
-        TriangleMesh mesh = new TriangleMesh();
-        parser.read("C:\\Users\\user\\Documents\\3D Scenes\\Ajax\\Ajax_wall_emitter.obj", mesh);
-        BVHAfra bvh = new BVHAfra();
-        bvh.build(mesh);
+        int[] prefix = new int[]{1, 1, 1, 1, 1};
+        Arrays.parallelPrefix(prefix, (x, y) -> x + y);
+        
+        System.out.println(Arrays.toString(prefix));
        
     }
             

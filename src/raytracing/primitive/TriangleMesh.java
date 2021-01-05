@@ -7,7 +7,7 @@ package raytracing.primitive;
 
 import coordinate.generic.AbstractMesh;
 import coordinate.generic.raytrace.AbstractAccelerator;
-import coordinate.list.CoordinateList;
+import coordinate.list.CoordinateFloatList;
 import coordinate.list.IntList;
 import coordinate.utility.Value2Df;
 import raytracing.accel.BVHAfra;
@@ -32,12 +32,50 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
     
     public TriangleMesh()
     {
-        points = new CoordinateList(Point3f.class);
-        normals = new CoordinateList(Vector3f.class);
-        texcoords = new CoordinateList(Point2f.class);
+        points = new CoordinateFloatList(Point3f.class);
+        normals = new CoordinateFloatList(Vector3f.class);
+        texcoords = new CoordinateFloatList(Point2f.class);
         triangleFaces = new IntList();
         bounds = new BoundingBox();
     }
+    
+    public void initCoordList(int sizeP, int sizeN, int sizeT, int sizeF)
+    {
+        this.initCoordList(Point3f.class, Vector3f.class, Point2f.class, sizeP, sizeN, sizeT, sizeF);
+    }
+    
+    public Vector3f getNorm(int primID)
+    {
+        Point3f p1 = getVertex1(primID);
+        Point3f p2 = getVertex2(primID);
+        Point3f p3 = getVertex3(primID);
+        
+        Vector3f e1 = Point3f.sub(p2, p1);
+        Vector3f e2 = Point3f.sub(p3, p1);
+
+        return Vector3f.cross(e1, e2).normalize();
+        
+    }
+    
+    public Vector3f e1(int primID)
+    {
+        Point3f p1 = getVertex1(primID);
+        Point3f p2 = getVertex2(primID);
+        
+        return Point3f.sub(p2, p1);
+        
+    }
+    
+    public Vector3f e2(int primID)
+    {
+        Point3f p1 = getVertex1(primID);
+        Point3f p3 = getVertex3(primID);
+        
+        return  Point3f.sub(p3, p1);
+    }
+    
+    
+    
     @Override
     public void addPoint(Point3f p) {
         points.add(p);
@@ -147,7 +185,7 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
 
     @Override
     public void buildAccelerator() {
-        accelerator = new BVHAfra();
+        accelerator = new BVHPlocTree();
         accelerator.build(this);
     }
 
@@ -155,6 +193,7 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
     public float getArea(int primID) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
     
     public Vector3f getNormal(Point3f p1, Point3f p2, Point3f p3, int primID, Value2Df uv)
     {        
@@ -173,7 +212,7 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
 
             return Vector3f.cross(e1, e2).normalize();
         }
-    }    
+    } 
     
     public boolean mollerIntersection(Ray r, float[] tuv, Point3f p1, Point3f p2, Point3f p3)
     {

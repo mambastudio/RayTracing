@@ -6,7 +6,11 @@
 package raytracing;
 
 import bitmap.display.DynamicDisplay;
+import coordinate.parser.obj.OBJInfo;
+import coordinate.parser.obj.OBJMappedParser;
+import coordinate.parser.obj.OBJMappedParser;
 import coordinate.parser.obj.OBJParser;
+import coordinate.utility.Timer;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -63,14 +67,26 @@ public class RayTracingFXMLController implements Initializable {
         if(file == null) return;
         
         LambdaThread.executeThread(()->{
-            OBJParser parser = new OBJParser();
+            OBJMappedParser parser = new OBJMappedParser();            
             TriangleMesh mesh = new TriangleMesh();
-            parser.read(file.toURI(), mesh);               
+            parser.readAttributes(file.toURI());
+            
+            //init size (estimate) of coordinate list/array
+            OBJInfo info = parser.getInfo();
+            mesh.initCoordList(info.v(), info.vn(), info.vt(), info.f());
+            
+            Timer timer = Timer.timeThis(()->{
+                parser.read(file.toURI(), mesh); 
+            });
+            System.out.println("Time to read mesh: " +timer);
+            
+           
             mesh.buildAccelerator();
             utility.setWaveFrontFolder(file.getParent());
             api.setPrimitive(mesh);                        
             api.reposition();
             api.triggerRender();
+            
         });
     }
     

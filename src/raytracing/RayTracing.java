@@ -30,7 +30,7 @@ public class RayTracing extends Application{
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-         FXMLLoader loader = new FXMLLoader(getClass().getResource("RayTracingFXML.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("RayTracingFXML.fxml"));
         Parent root = loader.load();
         controller = (RayTracingFXMLController)loader.getController();
                         

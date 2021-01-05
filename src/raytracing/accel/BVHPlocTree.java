@@ -196,7 +196,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
                     node.bounds.include(input[left].bounds, input[right].bounds); //set bounding box
                     node.left = input[left].ptr;  node.right = input[right].ptr; //update children index
                     
-                    //update children (set sibling and parent)                   
+                    //update children (setValue sibling and parent)                   
                     input[left].sibling = input[right].ptr; input[left].parent = node_out_idx;
                     input[right].sibling = input[left].ptr; input[right].parent = node_out_idx;
                     
@@ -216,7 +216,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
 
     @Override
     public boolean intersect(Ray r, Intersection isect) {
-        /*
+        
         int[] todo = new int[164];
         int stackptr = 0;
         boolean hit = false;
@@ -270,8 +270,8 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
             }
         }
         return hit;
-        */
        
+       /*
         boolean hit = false;
         int nodeId = totalS-1;
         long bitstack = 0;                      //be careful when you use a 32 bit integer. For deeper hierarchy traversal may lead into an infinite loop for certain scenes
@@ -331,6 +331,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
             nodeId = siblingId;
             bitstack ^= 1;           
         }
+*/
     }
     
     public boolean isInner(int nodeId)
