@@ -112,7 +112,7 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
     }
 
     @Override
-    public int getCount() {
+    public int getSize() {
         return triangleSize();
     }
 

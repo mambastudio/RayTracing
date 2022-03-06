@@ -31,7 +31,7 @@ public class HLBVH implements AbstractAccelerator<Ray, Intersection, Primitive, 
         BoundingBox bounds = primitives.getBound();
         
         //2: Compute Morton indices of primitives
-        MortonData[] mortonPrims = new MortonData[primitives.getCount()];
+        MortonData[] mortonPrims = new MortonData[primitives.getSize()];
         for(int i = 0; i<mortonPrims.length; i++) 
         {
             mortonPrims[i] = new MortonData();            
@@ -49,7 +49,7 @@ public class HLBVH implements AbstractAccelerator<Ray, Intersection, Primitive, 
     
     public void generateHiererchy(MortonData[] mortonPrims, Node[] leafNodes, Node[] internalNodes) //leafNodes = new Node[numOfObjects], internalNodes = new Node[numOfObjects-1]
     {
-        int numOfObjects = primitives.getCount();
+        int numOfObjects = primitives.getSize();
                 
         for(int idx = 0; idx < numOfObjects; idx++) //parallel
             leafNodes[idx].objectID = mortonPrims[idx].index;

@@ -30,7 +30,7 @@ public class NullAccelerator implements AbstractAccelerator<Ray, Intersection, P
     @Override
     public boolean intersect(Ray ray, Intersection isect) {
         boolean hit = false;
-        for(int i = 0; i<primitives.getCount(); i++)
+        for(int i = 0; i<primitives.getSize(); i++)
             if(primitives.getBound(i).intersectP(ray))
                 if(primitives.intersect(ray, i, isect))
                     hit |= true;
@@ -40,7 +40,7 @@ public class NullAccelerator implements AbstractAccelerator<Ray, Intersection, P
     @Override
     public boolean intersectP(Ray ray) {
         boolean hit = false;
-        for(int i = 0; i<primitives.getCount(); i++)
+        for(int i = 0; i<primitives.getSize(); i++)
             if(primitives.intersectP(ray, i))
                 hit |= true;
         return hit;

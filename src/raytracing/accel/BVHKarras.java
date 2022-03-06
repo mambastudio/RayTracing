@@ -33,7 +33,7 @@ public class BVHKarras implements AbstractAccelerator<Ray, Intersection, Primiti
     {
         this.primitives = primitives;
         
-        leafS = primitives.getCount();
+        leafS = primitives.getSize();
         nodeS = leafS - 1;
         totalS = nodeS + leafS;
         

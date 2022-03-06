@@ -72,10 +72,10 @@ public class Grid {
     
     public static void compute_bboxes(GridInfo info, TriangleMesh tris, BoundingBox[] bboxes) 
     {
-        bboxes = new BoundingBox[tris.getCount()];
+        bboxes = new BoundingBox[tris.getSize()];
         BoundingBox grid_bb = new BoundingBox();
         
-        for(int i = 0; i<tris.getCount(); i++)
+        for(int i = 0; i<tris.getSize(); i++)
         {
             bboxes[i] = tris.getBound(i);
             grid_bb.include(bboxes[i]);
@@ -93,9 +93,9 @@ public class Grid {
         Point3f inv_size  = new Point3f(1.0f/cell_size.x, 1.0f/cell_size.y, 1.0f/cell_size.z);
         Point3f inv_org   = info.bbox.minimum.mul(inv_size);
 
-        int[] approx_ref_counts = new int[tris.getCount() + 1];
+        int[] approx_ref_counts = new int[tris.getSize() + 1];
         
-        for(int i = 0; i<tris.getCount(); i++)
+        for(int i = 0; i<tris.getSize(); i++)
         {
             Range range = Grid.find_coverage(bboxes[i], inv_org, inv_size, info.dims);
             approx_ref_counts[i + 1] = range.size();
@@ -114,7 +114,7 @@ public class Grid {
         
         Collections.fill(refs, new Ref(-1, -1, -1));
         
-        for(int i = 0; i<tris.getCount(); i++)
+        for(int i = 0; i<tris.getSize(); i++)
         {
             final int ii = i;
             Range cov = find_coverage(bboxes[i], inv_org, inv_size, info.dims);

@@ -6,7 +6,6 @@
 package raytracing.accel;
 
 import coordinate.generic.raytrace.AbstractAccelerator;
-import java.util.concurrent.TimeUnit;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Ray;
@@ -32,13 +31,13 @@ public class BVHAfra implements AbstractAccelerator<Ray, Intersection, Primitive
     public void build(Primitive primitives) {
         
         this.primitives = primitives;  
-        objects = new int[this.primitives.getCount()];
-        for(int i = 0; i<this.primitives.getCount(); i++)
+        objects = new int[this.primitives.getSize()];
+        for(int i = 0; i<this.primitives.getSize(); i++)
             objects[i] = i;
         bound = this.primitives.getBound();
         
         //Allocate BVH root node
-        nodes = new BVHNode[this.primitives.getCount() * 2 - 1];
+        nodes = new BVHNode[this.primitives.getSize() * 2 - 1];
         BVHNode root = new BVHNode();  
         nodes[0] = root; 
         nodesPtr = 1;

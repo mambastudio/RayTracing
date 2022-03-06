@@ -134,4 +134,9 @@ public class Ray implements AbstractRay<Point3f, Vector3f>
     public Vector3f getInverseDirection() {
         return inv_d.copy();
     }
+
+    @Override
+    public AbstractRay<Point3f, Vector3f> copy() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

@@ -51,7 +51,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
     public void build(Primitive primitives) {
         this.primitives = primitives;
         
-        leafS = primitives.getCount();
+        leafS = primitives.getSize();
         nodeS = leafS - 1;
         totalS = nodeS + leafS;
         

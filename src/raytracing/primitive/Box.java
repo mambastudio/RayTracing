@@ -37,7 +37,7 @@ public class Box implements Primitive
     }
     
     @Override
-    public int getCount() {
+    public int getSize() {
         return 1;
     }
 

@@ -38,13 +38,13 @@ public class ParallelBVH implements AbstractAccelerator<Ray, Intersection, Primi
         long time1 = System.nanoTime();
         
         this.primitives = primitives;  
-        objects = new int[this.primitives.getCount()];
-        for(int i = 0; i<this.primitives.getCount(); i++)
+        objects = new int[this.primitives.getSize()];
+        for(int i = 0; i<this.primitives.getSize(); i++)
             objects[i] = i;
         bound = this.primitives.getBound();
         
         //Allocate BVH root node
-        nodes = new BVHNode[this.primitives.getCount() * 2 - 1];
+        nodes = new BVHNode[this.primitives.getSize() * 2 - 1];
         BVHNode root = new BVHNode();
         nodes[0] = root;
         nodesPtr = 1;

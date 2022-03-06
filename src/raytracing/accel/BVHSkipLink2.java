@@ -6,8 +6,8 @@
 package raytracing.accel;
 
 import coordinate.generic.raytrace.AbstractAccelerator;
-import coordinate.struct.FloatStruct;
-import coordinate.struct.StructFloatArray;
+import coordinate.struct.structfloat.FloatStruct;
+import coordinate.struct.structfloat.StructFloatArray;
 import java.util.concurrent.TimeUnit;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
@@ -38,13 +38,13 @@ public class BVHSkipLink2 implements AbstractAccelerator<Ray, Intersection, Prim
         long time1 = System.nanoTime();
         
         this.primitives = primitives;  
-        objects = new int[this.primitives.getCount()];
-        for(int i = 0; i<this.primitives.getCount(); i++)
+        objects = new int[this.primitives.getSize()];
+        for(int i = 0; i<this.primitives.getSize(); i++)
             objects[i] = i;
         bound = this.primitives.getBound();
         
         //Allocate BVH root node
-        nodes = new StructFloatArray<>(BVHNode.class, this.primitives.getCount() * 2 - 1);
+        nodes = new StructFloatArray<>(BVHNode.class, this.primitives.getSize() * 2 - 1);
         BVHNode root = new BVHNode();
         nodes.set(root, 0);        
         nodeCount = 1;
