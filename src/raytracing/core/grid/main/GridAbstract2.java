@@ -76,9 +76,9 @@ public class GridAbstract2 {
     public void update_log_dims(IntArray log_dims, int num_top_cells) {
         for(int id = 0; id<num_top_cells; id++)
         {
-            if (id >= num_top_cells) return;
-
+            if (id >= num_top_cells) return;            
             log_dims.set(id, max(0, log_dims.get(id) - 1));
+            
         }
     }
     
@@ -92,10 +92,13 @@ public class GridAbstract2 {
         {            
             if (id >= num_refs) return;
 
-            int cell_id = cell_ids.get(id);
+            int cell_id = cell_ids.get(id);  
+            
             int value = ((cell_id >= 0) && (entries[cell_id].log_dim == 0)) ? 1 : 0;            
             kept_flags.set(id, value);
-        }
+        }     
+        
+        System.out.println(Arrays.toString(entries));
     }
     
     /// Update the entries for the one level before the current one
@@ -128,16 +131,32 @@ public class GridAbstract2 {
             if (id >= num_refs) return;
 
             int cell_id = cell_ids.get(id);
-            if (cell_id < 0) return;
+            if (cell_id < 0) continue;
 
             Value3Di cell_min = cells[cell_id].min;
             int top_cell_id = top_level_cell(cell_min);
             int log_dim = log_dims.get(top_cell_id);
-
+            
             entries[cell_id] = make_entry(min(log_dim, 1), 0);
         }
     }
-
+    
+    /// Compute an over-approximation of the number of references
+    /// that are going to be generated during reference emission
+    public void count_new_refs(
+            BoundingBox[]  bboxes,
+            IntArray counts,
+            int num_prims) {
+        
+        for(int id = 0; id<num_prims; id++)
+        {
+            if (id >= num_prims) return;
+            
+            BoundingBox ref_bb = bboxes[id].getCopy();//load_bbox(bboxes + id);
+            Range range  = compute_range(grid_dims, grid_bbox, ref_bb);
+            counts.set(id, Math.max(0, range.size()));               
+        }        
+    }
     
     public void count_refs_per_cell(IntArray cell_ids,
                                     IntArray refs_per_cell,                                    
@@ -239,8 +258,7 @@ public class GridAbstract2 {
             if (!intersect) {
                 cell_ids.set(id, -1);
                 ref_ids.set(id, -1);                
-            }
-            
+            }    
             
         }
     }
@@ -252,21 +270,21 @@ public class GridAbstract2 {
                                     IntArray split_masks,
                                     int num_split) {
         for(int id = 0; id<num_split; id++)
-        {
+        {            
             if (id >= num_split) return;
 
             int cell_id = cell_ids.get(id);
             if (cell_id < 0) {
                 split_masks.set(id, 0);
-                return;
+                continue;
             }
             int ref  =  ref_ids.get(id);
-            Cell cell = cells[cell_id];
+            Cell cell = cells[cell_id];            
             Triangle prim = prims.getTriangle(ref);
 
             Point3f cell_min = grid_bbox.minimum.add(cell_size.mul(new Vector3f(cell.min)));
             Point3f cell_max = grid_bbox.minimum.add(cell_size.mul(new Vector3f(cell.max)));
-            Point3f middle = (cell_min.add(cell_max)).mul(0.5f).asPoint3f();
+            Point3f middle = (cell_min.addS(cell_max)).mul(0.5f);
 
             int mask = 0xFF;
 
@@ -285,28 +303,68 @@ public class GridAbstract2 {
             if (ref_bb.minimum.z >   middle.z) mask &= 0xF0;
             if (ref_bb.maximum.z <   middle.z) mask &= 0x0F;
 
-            for (int i = Integer.numberOfTrailingZeros(mask) - 1;;) {
+            for (int i = __ffs(mask) - 1;;) {
                 BoundingBox bbox = new BoundingBox(
-                        new Point3f(
-                            (i & 1) != 0 ? middle.x : cell_min.x,
-                            (i & 2) != 0 ? middle.y : cell_min.y,
-                            (i & 4) != 0 ? middle.z : cell_min.z),
-                        new Point3f(
-                            (i & 1) != 0 ? cell_max.x : middle.x,
-                            (i & 2) != 0 ? cell_max.y : middle.y,
-                            (i & 4) != 0 ? cell_max.z : middle.z));
-                System.out.println(intersect_prim_cell(prim, bbox));
+                        new Point3f((i & 1) != 0 ? middle.x : cell_min.x,
+                                    (i & 2) != 0 ? middle.y : cell_min.y,
+                                    (i & 4) != 0 ? middle.z : cell_min.z),
+                        new Point3f((i & 1) != 0 ? cell_max.x : middle.x,
+                                    (i & 2) != 0 ? cell_max.y : middle.y,
+                                    (i & 4) != 0 ? cell_max.z : middle.z));
                 if (!intersect_prim_cell(prim, bbox)) mask &= ~(1 << i);
 
                 // Skip non-intersected children
-                int skip = Integer.numberOfTrailingZeros(mask >> (i + 1));
-               // System.out.println(Integer.toBinaryString(skip));
+                int skip = __ffs(mask >> (i + 1));
                 if (skip == 0) break;
                 i += 1 + (skip - 1);
             }
 
             split_masks.set(id, mask);
         }
+    }
+    
+    /// Split references according to the given array of split masks
+    public void split_refs(
+                    IntArray cell_ids,
+                    IntArray ref_ids,
+                    Entry[] entries,
+                    IntArray split_masks,
+                    IntArray start_split,
+                    IntArray new_cell_ids,
+                    IntArray new_ref_ids,
+                    int num_split) {
+       
+        for(int id = 0; id<num_split; id++)
+        {
+            if (id >= num_split) return;
+
+            int cell_id = cell_ids.get(id);            
+            int ref = ref_ids.get(id); 
+            int begin = entries[cell_id].begin;
+            int mask  = split_masks.get(id);
+            int start = start_split.get(id);
+            while (mask != 0) {
+                int child_id = __ffs(mask) - 1;
+                mask &= ~(1 << child_id);
+                new_ref_ids.set(start, ref);
+                new_cell_ids.set(start, begin + child_id);
+                start++;
+            }
+        }
+    }
+    
+    public int __ffs(int value)
+    {
+        int pos = 1;
+        while ((value & 1) == 0 && value != 0) {
+            value >>= 1;
+            pos++;
+        }
+        return (value == 0) ? 0 : pos;
+    }
+    
+    public int __popc(int mask) {
+        return Integer.bitCount(mask);
     }
 
     public void inclusiveScan(int[] array)

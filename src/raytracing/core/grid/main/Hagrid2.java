@@ -31,22 +31,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
     }
     
     
-    /// Compute an over-approximation of the number of references
-    /// that are going to be generated during reference emission
-    public void count_new_refs(
-            BoundingBox[]  bboxes,
-            IntArray counts,
-            int num_prims) {
-        
-        for(int id = 0; id<num_prims; id++)
-        {
-            if (id >= num_prims) return;
-            
-            BoundingBox ref_bb = bboxes[id].getCopy();//load_bbox(bboxes + id);
-            Range range  = compute_range(grid_dims, grid_bbox, ref_bb);
-            counts.set(id, Math.max(0, range.size()));               
-        }        
-    }
+    
     
     //NOT SURE IF IT'S CORRECT
     public void emit_new_refs(
@@ -82,7 +67,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
                     cur++;
                     x++;
                     if (x > range.hx) { x = range.lx; y++; }
-                    if (y > range.hy) { y = range.ly; z++; }
+                    if (y > range.hy) { y = range.ly; z++; } 
                 }
             }
             
@@ -105,7 +90,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
                     int x = lx + (k % (sx));
                     int y = ly + ((k / (sx)) % sy);
                     int z = lz + (k / ((sx) * sy));
-                    new_ref_ids.set(i,  r);
+                    new_ref_ids.set(i,  r); 
                     new_cell_ids.set(i, x + grid_dims.x * (y + grid_dims.y * z));                    
                 }
             }
@@ -123,21 +108,22 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         IntArray refs_per_cell     = new IntArray(new int[num_top_cells]);
         //int[] log_dims          = new int[num_top_cells + 1];
         
-        count_new_refs(bboxes, new_ref_counts, num_prims);        
+        count_new_refs(bboxes, new_ref_counts, num_prims);  
         
-        System.arraycopy(new_ref_counts.getWholeArray(), 0, start_emit.getWholeArray(), 0, new_ref_counts.size());      
+        System.arraycopy(new_ref_counts.getWholeArray(), 0, start_emit.getWholeArray(), 0, new_ref_counts.size());        
         int num_new_refs = exclusiveScan(start_emit.getWholeArray());
-                
+        
+                        
         IntArray new_ref_ids  = new IntArray(new int[2 * num_new_refs]);
-        IntArray new_cell_ids = new_ref_ids.getSubArray(num_new_refs, new_ref_ids.size());        
-        emit_new_refs(bboxes, start_emit, new_ref_ids, new_cell_ids, num_prims);   
+        IntArray new_cell_ids = new_ref_ids.splitSubArrayFrom(num_new_refs);       
+        emit_new_refs(bboxes, start_emit, new_ref_ids, new_cell_ids, num_prims); 
         
         // Compute the number of references per cell       
         count_refs_per_cell(new_cell_ids, refs_per_cell, num_new_refs);
         
         // Compute an independent resolution in each of the top-level cells
         compute_log_dims(refs_per_cell, log_dims, snd_density, num_top_cells);
-                
+                        
         // Find the maximum sub-level resolution
         grid_shift.set(0, Arrays.stream(log_dims.getWholeArray(), 0, num_top_cells).reduce(Integer.MIN_VALUE, (a, b) -> Math.max(a, b)));
         
@@ -157,7 +143,6 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         
         // Filter out the references that do not intersect the cell they are in
         filter_refs(new_cell_ids, new_ref_ids, prims, new_cells, num_new_refs);
-        
                         
         Level level = new Level();
         level.ref_ids   = new_ref_ids;  
@@ -167,7 +152,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         level.cells     = new_cells;   
         level.entries   = new_entries;
         level.num_cells = num_top_cells;  
-        
+                
         levels.add(level);
     }
     
@@ -187,11 +172,13 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         int cur_level  = levels.size();
         
         IntArray kept_flags = new IntArray(new int[num_refs + 1]);
-                       
+        
         // Find out which cell will be split based on whether it is empty or not and the maximum depth
         compute_dims(cell_ids, cells, log_dims, entries, num_refs);
         update_log_dims(log_dims, num_top_cells);
         mark_kept_refs(cell_ids, entries, kept_flags, num_refs);
+        
+       
         
         // Store the sub-cells starting index in the entries
         IntArray start_cell = new IntArray(new int[num_cells + 1]);
@@ -201,6 +188,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         
         update_entries(start_cell, entries, num_cells);
         
+       
         // Partition the set of cells into the sets of those which will be split and those which won't
         IntArray tmp_ref_ids  = new IntArray(new int[num_refs * 2]);
         IntArray tmp_cell_ids = tmp_ref_ids.getSubArray(num_refs, tmp_ref_ids.size());
@@ -213,16 +201,24 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         swap(tmp_ref_ids, ref_ids);
         swap(tmp_cell_ids, cell_ids);
         
+        System.out.println(cell_ids);
+        System.out.println(ref_ids);
+       
+        
         int num_kept = num_sel_refs;
         levels.get(levels.size()-1).ref_ids  = ref_ids;
         levels.get(levels.size()-1).cell_ids = cell_ids;
         levels.get(levels.size()-1).num_kept = num_kept;
-
+        
+        
+               
         if (num_new_cells == 0) {
             // Exit here because no new reference will be emitted            
             return false;
         }
         int num_split = num_refs - num_kept;
+        
+        System.out.println(num_split);
         
         // Split the references
         IntArray split_masks = new IntArray(new int[num_split + 1]);
@@ -234,7 +230,30 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
                 prims, cells, 
                 split_masks, 
                 num_split);
-         System.out.println(split_masks);
+        
+        
+        // Store the sub-cells starting index in the entries        
+        for(int i = 0; i<split_masks.size(); i++)
+            start_split.set(i, __popc(split_masks.get(i)));
+        int num_new_refs = this.exclusiveScan(start_split.getWholeArray());
+                
+        if(!(num_new_refs <= 8 * num_split))
+            throw new UnsupportedOperationException();
+        
+        IntArray new_ref_ids = new IntArray(new int[num_new_refs * 2]);
+        IntArray new_cell_ids = new_ref_ids.splitSubArrayFrom(num_new_refs);
+        
+        split_refs(
+                cell_ids.splitSubArrayFrom(num_kept), 
+                ref_ids.splitSubArrayFrom(num_kept), 
+                entries, 
+                split_masks, 
+                start_split, 
+                new_cell_ids, 
+                new_ref_ids, 
+                num_split);
+
+       
        
         return false;
     }

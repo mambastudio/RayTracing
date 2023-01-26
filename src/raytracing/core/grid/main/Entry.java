@@ -31,7 +31,10 @@ public class Entry {
     public int log_dim = LOG_DIM_BITS.getValue();    ///< Logarithm of the dimensions of the entry (0 for leaves)
     public int begin   = BEGIN_BITS.getValue();      ///< Next entry index (cell index for leaves)
     
-    public Entry(){}
+    public Entry(){
+        log_dim = 0;
+        begin = 0;
+    }
     
     public Entry(int log_dim, int begin)
     {
@@ -42,6 +45,6 @@ public class Entry {
     @Override
     public String toString()
     {
-        return "log_dim " +log_dim+ " begin " +begin;
+        return "" +log_dim;//+ " begin " +begin;
     }
 }

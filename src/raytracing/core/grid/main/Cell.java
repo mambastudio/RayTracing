@@ -27,4 +27,5 @@ public class Cell {
         this.max = max;
         this.end = end;
     }
+    
 }
