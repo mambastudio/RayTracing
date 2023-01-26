@@ -242,6 +242,7 @@ public class GridAbstract2 {
             Cell[] cells,
             int num_refs) 
     {        
+        
         for(int id = 0; id<num_refs; id++)
         {            
             if (id >= num_refs) return;
@@ -337,8 +338,9 @@ public class GridAbstract2 {
         for(int id = 0; id<num_split; id++)
         {
             if (id >= num_split) return;
-
-            int cell_id = cell_ids.get(id);            
+            
+            int cell_id = cell_ids.get(id);   
+            
             int ref = ref_ids.get(id); 
             int begin = entries[cell_id].begin;
             int mask  = split_masks.get(id);
@@ -349,6 +351,40 @@ public class GridAbstract2 {
                 new_ref_ids.set(start, ref);
                 new_cell_ids.set(start, begin + child_id);
                 start++;
+            }
+        }
+    }
+    
+    /// Generate new cells based on the previous level
+    public void emit_new_cells(Entry[] entries,
+                               Cell[] cells,
+                               Cell[] new_cells,
+                               int num_cells) {
+        for(int id = 0; id<num_cells; id++)
+        {
+            if (id >= num_cells) return;
+
+            Entry entry = entries[id];
+            int log_dim = entry.log_dim;
+            if (log_dim == 0) continue;
+
+            int start = entry.begin;
+            Cell cell = cells[id];
+            int min_x = cell.min.x;
+            int min_y = cell.min.y;
+            int min_z = cell.min.z;
+            int inc = (cell.max.x - cell.min.x) >> 1;
+
+            for (int i = 0; i < 8; i++) {
+                int x = min_x + (i & 1) * inc;
+                int y = min_y + ((i >> 1) & 1) * inc;
+                int z = min_z + (i >> 2) * inc;
+
+                cell.min = new Value3Di(x, y, z);
+                cell.max = new Value3Di(x + inc, y + inc, z + inc);
+                cell.begin = 0;
+                cell.end   = 0;
+                new_cells[start + i] = cell; 
             }
         }
     }

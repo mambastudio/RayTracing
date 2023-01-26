@@ -6,12 +6,9 @@
 package raytracing.core.grid.main;
 
 import coordinate.utility.Value3Di;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import java.util.ArrayList;
 import java.util.Arrays;
 import raytracing.core.coordinate.BoundingBox;
-import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Vector3f;
 import raytracing.primitive.TriangleMesh;
 
@@ -152,7 +149,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         level.cells     = new_cells;   
         level.entries   = new_entries;
         level.num_cells = num_top_cells;  
-                
+                        
         levels.add(level);
     }
     
@@ -164,7 +161,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         IntArray ref_ids   = levels.get(levels.size()-1).ref_ids;
         Cell[] cells    = levels.get(levels.size()-1).cells;
         Entry[] entries = levels.get(levels.size()-1).entries;
-        
+                
         int num_top_cells = dims.x * dims.y * dims.z;
         int num_refs  = levels.get(levels.size()-1).num_refs;
         int num_cells = levels.get(levels.size()-1).num_cells;
@@ -253,9 +250,22 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
                 new_ref_ids, 
                 num_split);
 
-       
-       
-        return false;
+        // Emission of the new cells
+        Cell[] new_cells   = new Cell[num_new_cells + 0];
+        Entry[] new_entries = new Entry[num_new_cells + 1];
+        emit_new_cells(entries, cells, new_cells, num_cells);
+        
+        Level level = new Level();
+        level.ref_ids   = new_ref_ids;         
+        level.cell_ids  = new_cell_ids;        
+        level.num_refs  = num_new_refs;        
+        level.num_kept  = num_new_refs;        
+        level.cells     = new_cells;           
+        level.entries   = new_entries;         
+        level.num_cells = num_new_cells;     
+        
+        levels.add(level);
+        return true;
     }
     
     public void build(TriangleMesh prims, int num_prims, Grid2 grid, float top_density, float snd_density)
