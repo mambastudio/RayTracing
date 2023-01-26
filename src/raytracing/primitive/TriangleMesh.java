@@ -10,8 +10,6 @@ import coordinate.generic.raytrace.AbstractAccelerator;
 import coordinate.list.CoordinateFloatList;
 import coordinate.list.IntList;
 import coordinate.utility.Value2Df;
-import raytracing.accel.BVHAfra;
-import raytracing.accel.BVHKarras;
 import raytracing.accel.BVHPlocTree;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.Intersection;
@@ -25,7 +23,7 @@ import raytracing.core.coordinate.Vector3f;
  *
  * @author user
  */
-public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f> implements Primitive
+public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f, Ray, Triangle> implements Primitive
 {
     private AbstractAccelerator accelerator;
     private final BoundingBox bounds;
@@ -255,5 +253,10 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f>
         }
         else
             return false;
+    }
+
+    @Override
+    public Triangle getTriangle(int index) {
+        return new Triangle(this.getVertex1(index), this.getVertex2(index), this.getVertex3(index));
     }
 }

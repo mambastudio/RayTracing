@@ -6,12 +6,14 @@
 package raytracing.core.coordinate;
 
 import coordinate.generic.VCoord;
+import coordinate.utility.Value3Df;
+import coordinate.utility.Value3Di;
 
 /**
  *
  * @author user
  */
-public class Vector3f  implements VCoord<Vector3f>{
+public class Vector3f  implements VCoord<Point3f, Vector3f>{
     
     public float x, y, z;
     
@@ -19,6 +21,8 @@ public class Vector3f  implements VCoord<Vector3f>{
     public Vector3f(float a) {x = a; y = a; z = a;}
     public Vector3f(float a, float b, float c) {x = a; y = b; z = c;}
     public Vector3f(Vector3f a) {x = a.x; y = a.y; z = a.z;}
+    public Vector3f(Value3Df a){x = a.x; y = a.y; z = a.z;}
+    public Vector3f(Value3Di a){x = a.x; y = a.y; z = a.z;}
 
     public static Vector3f cross(Vector3f a, Vector3f b)
     {
@@ -26,6 +30,7 @@ public class Vector3f  implements VCoord<Vector3f>{
     }
     
     public static float dot(Vector3f a, Vector3f b) {return a.x*b.x + a.y*b.y + a.z*b.z;}
+
     
     @Override
     public Vector3f getCoordInstance() {
@@ -113,4 +118,10 @@ public class Vector3f  implements VCoord<Vector3f>{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    @Override
+    public String toString()
+    {
+        float[] array = getArray();
+        return String.format("(%3.2f, %3.2f, %3.2f)", array[0], array[1], array[2]);
+    }
 }

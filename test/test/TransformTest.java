@@ -5,7 +5,7 @@
  */
 package test;
 
-import coordinate.model.Transform;
+import coordinate.transform.Transform;
 import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Vector3f;
 

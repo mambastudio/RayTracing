@@ -172,6 +172,10 @@ public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, Boundi
         return maximum.sub(minimum);
     }
     
+    public final boolean intersects(BoundingBox b) {
+        return ((b != null) && (minimum.x <= b.maximum.x) && (maximum.x >= b.minimum.x) && (minimum.y <= b.maximum.y) && (maximum.y >= b.minimum.y) && (minimum.z <= b.maximum.z) && (maximum.z >= b.minimum.z));
+    }
+    
     @Override
     public BoundingBox clone() 
     {        

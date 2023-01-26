@@ -5,7 +5,6 @@
  */
 package raytracing.core.coordinate;
 
-import raytracing.core.coordinate.Vector3f;
 import coordinate.generic.SCoord;
 
 /**
@@ -129,4 +128,10 @@ public class Point3f implements SCoord<Point3f, Vector3f> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    @Override
+    public String toString()
+    {
+        float[] array = getArray();
+        return String.format("(%3.2f, %3.2f, %3.2f)", array[0], array[1], array[2]);
+    }
 }
