@@ -19,8 +19,8 @@ public class Test3 {
     {
         //testIntArray();
         //testTriangleBox();
-        //testPartition();
-        swapTwoArrays();
+        testPartition();
+        //swapTwoArrays();
         //int mask = ballot_sync(new boolean[]{true, false, false});        
         //System.out.println(Integer.toString(mask, 2));
         //System.out.println(31 - Integer.numberOfTrailingZeros(mask));
@@ -84,7 +84,7 @@ public class Test3 {
         System.out.println(d_out);
         
     }
-    
+            
     public static int partition(IntArray input, IntArray output, int n, IntArray flags)
     {
         System.arraycopy(input.getWholeArray(), 0, output.getWholeArray(), 0, n);
@@ -99,6 +99,25 @@ public class Test3 {
             }
         }
         return mid;
+    }
+    
+    public static int partition2(IntArray input, IntArray output, int n, IntArray flags)
+    {
+        int count_ptr = 0;
+        int outputIndex = 0;
+        for (int i = 0; i < flags.size(); i++) {
+            if (flags.get(i) == 1) {
+                output.set(outputIndex++, input.get(i));
+                count_ptr++;
+            }
+        }
+
+        for (int i = flags.size() - 1; i >= 0; i--) {
+            if (flags.get(i) == 0) {
+                output.set(outputIndex++, input.get(i));               
+            }
+        }
+        return count_ptr;
     }
     
     private static void swap(int i, int j, int... arr)

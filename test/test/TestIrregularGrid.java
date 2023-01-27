@@ -29,7 +29,7 @@ public class TestIrregularGrid {
     {
         OBJParser parser = new OBJParser();
         TriangleMesh tris = new TriangleMesh();
-        parser.read("C:\\Users\\user\\Documents\\3D Scenes\\box\\Triangles3.obj", tris);
+        parser.read("C:\\Users\\jmburu\\Documents\\box\\Mori.obj", tris);
         
         Hagrid2 hagrid = new Hagrid2();
         hagrid.build_grid(tris, tris.getSize(), grid, top_density, snd_density);

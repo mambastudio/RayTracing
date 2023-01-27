@@ -98,7 +98,6 @@ public class GridAbstract2 {
             kept_flags.set(id, value);
         }     
         
-        System.out.println(Arrays.toString(entries));
     }
     
     /// Update the entries for the one level before the current one
@@ -270,6 +269,7 @@ public class GridAbstract2 {
                                     Cell[] cells,
                                     IntArray split_masks,
                                     int num_split) {
+        
         for(int id = 0; id<num_split; id++)
         {            
             if (id >= num_split) return;
@@ -279,8 +279,16 @@ public class GridAbstract2 {
                 split_masks.set(id, 0);
                 continue;
             }
+            
             int ref  =  ref_ids.get(id);
-            Cell cell = cells[cell_id];            
+            Cell cell = cells[cell_id];  
+            
+            if(ref < 0)
+            {
+                System.out.println(cell_id);
+                continue;
+            }
+            
             Triangle prim = prims.getTriangle(ref);
 
             Point3f cell_min = grid_bbox.minimum.add(cell_size.mul(new Vector3f(cell.min)));
@@ -339,7 +347,10 @@ public class GridAbstract2 {
         {
             if (id >= num_split) return;
             
-            int cell_id = cell_ids.get(id);   
+            int cell_id = cell_ids.get(id); 
+            
+            if(cell_id < 0)
+                continue;
             
             int ref = ref_ids.get(id); 
             int begin = entries[cell_id].begin;
