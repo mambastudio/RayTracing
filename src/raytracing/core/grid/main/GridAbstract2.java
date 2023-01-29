@@ -268,8 +268,7 @@ public class GridAbstract2 {
                                     TriangleMesh prims,
                                     Cell[] cells,
                                     IntArray split_masks,
-                                    int num_split) {
-        
+                                    int num_split) {       
         for(int id = 0; id<num_split; id++)
         {            
             if (id >= num_split) return;
@@ -281,14 +280,7 @@ public class GridAbstract2 {
             }
             
             int ref  =  ref_ids.get(id);
-            Cell cell = cells[cell_id];  
-            
-            if(ref < 0)
-            {
-                System.out.println(cell_id);
-                continue;
-            }
-            
+            Cell cell = cells[cell_id];              
             Triangle prim = prims.getTriangle(ref);
 
             Point3f cell_min = grid_bbox.minimum.add(cell_size.mul(new Vector3f(cell.min)));
@@ -342,13 +334,14 @@ public class GridAbstract2 {
                     IntArray new_cell_ids,
                     IntArray new_ref_ids,
                     int num_split) {
-       
+      
         for(int id = 0; id<num_split; id++)
         {
             if (id >= num_split) return;
             
             int cell_id = cell_ids.get(id); 
             
+            //Not in the code
             if(cell_id < 0)
                 continue;
             
@@ -429,37 +422,16 @@ public class GridAbstract2 {
     
     public int partition(IntArray input, IntArray output, int n, IntArray flags)
     {
-        System.arraycopy(input.getWholeArray(), 0, output.getWholeArray(), 0, n);
-        int start = 0;
-        int mid = start;
-        for(int i = start; i < n; i++)
-        {
-            if(flags.get(i)!=0)
-            {
-                swap(i, mid, output.getWholeArray());                
-                mid++;
+        int selected_index = 0;
+        int remaining_index = n - 1;
+        for (int i = 0; i < n; i++) {
+            if (flags.get(i) == 1) {
+                output.set(selected_index++, input.get(i));
+            } else {
+                output.set(remaining_index--, input.get(i));
             }
         }
-        return mid;
-    }
-    
-    private void swap(int i, int j, int... arr)
-    {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-    
-    protected void swap(IntArray x, IntArray y)
-    {
-        if(x.size() != y.size())
-            throw new UnsupportedOperationException("no swap since the two arrays are not equal");
-        int temp;
-        for(int i = 0; i<x.size(); i++)
-        {
-            temp = x.get(i);
-            x.set(i, y.get(i));
-            y.set(i, temp);
-        }
-    }
+
+        return selected_index;
+    }    
 }

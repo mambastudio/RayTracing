@@ -5,6 +5,7 @@
  */
 package test;
 
+import java.util.Arrays;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3f;
 import raytracing.core.grid.main.IntArray;
@@ -18,8 +19,10 @@ public class Test3 {
     public static void main(String... args)
     {
         //testIntArray();
+        testSwapIntArray();
         //testTriangleBox();
-        testPartition();
+        //testPartition();
+        //test();
         //swapTwoArrays();
         //int mask = ballot_sync(new boolean[]{true, false, false});        
         //System.out.println(Integer.toString(mask, 2));
@@ -34,6 +37,25 @@ public class Test3 {
         System.out.println(sArray);
         System.out.println(sArray.getSubArray(1, 3));
         System.out.println(sArray.get(5));
+    }
+    
+    public static void testSwapIntArray()
+    {
+        IntArray x = new IntArray(new int[]{0, 0, 0, 0, 1, 1, 1, 1});
+        IntArray y = new IntArray(new int[]{1, 1, 1, 1, 0, 0, 0, 0});
+        
+        IntArray xx = x.splitSubArrayFrom(4);
+        IntArray yy = y.splitSubArrayFrom(4);
+        
+        x.swap(y);
+        xx.swap(yy);
+        
+        System.out.println(x);
+        System.out.println(y);
+        
+        System.out.println(xx);
+        System.out.println(yy);
+        
     }
     
     public static void run()
@@ -63,10 +85,10 @@ public class Test3 {
     
     public static void testTriangleBox()
     {
-        TriSimple tri = new TriSimple(new Point3f(0, 0, 7), new Point3f(0, 4.5f, 0), new Point3f(7.5f, 0, 0));
+        TriSimple tri = new TriSimple(new Point3f(0, 0, 5), new Point3f(0, 5f, 0), new Point3f(5, 0, 0));
         BoundingBox box = new BoundingBox(new Point3f(), new Point3f(2, 2, 2));
         
-        boolean intersect = tri_overlap_box(false, true, 
+        boolean intersect = tri_overlap_box(true, false, 
                 tri.v0(), tri.e1(), tri.e2(), tri.normal(), 
                 box.minimum, box.maximum) ;
         
@@ -76,11 +98,12 @@ public class Test3 {
     public static void testPartition()
     {
         IntArray d_in = new IntArray(new int[]{1, 2, 3, 4, 5, 6, 7, 8});
-        IntArray d_flags =  new IntArray(new int[]{1, 0, 0, 1, 0, 1, 1, 0});
+        IntArray d_flags =  new IntArray(new int[]{0, 0, 0, 0, 0, 0, 0, 0});
         IntArray d_out = new IntArray(new int[d_in.size()]);
-        int d_num_selected_out = partition(d_in, d_out, d_in.size(), d_flags);
+        int d_num_selected_out = partition2(d_in, d_out, d_in.size(), d_flags);
         
-        System.out.println(d_num_selected_out);
+        System.out.println(d_in);
+        System.out.println(d_flags);
         System.out.println(d_out);
         
     }
@@ -103,21 +126,41 @@ public class Test3 {
     
     public static int partition2(IntArray input, IntArray output, int n, IntArray flags)
     {
-        int count_ptr = 0;
-        int outputIndex = 0;
-        for (int i = 0; i < flags.size(); i++) {
+        int selected_index = 0;
+        int remaining_index = n - 1;
+        for (int i = 0; i < n; i++) {
             if (flags.get(i) == 1) {
-                output.set(outputIndex++, input.get(i));
-                count_ptr++;
+                output.set(selected_index++, input.get(i));
+            } else {
+                output.set(remaining_index--, input.get(i));
             }
         }
 
-        for (int i = flags.size() - 1; i >= 0; i--) {
-            if (flags.get(i) == 0) {
-                output.set(outputIndex++, input.get(i));               
+        return selected_index;
+    }
+    
+    public static void test()
+    {
+        int num_items = 8;
+        int[] d_in = {1, 2, 3, 4, 5, 6, 7, 8};
+        char[] d_flags = {1, 0, 0, 1, 0, 0, 0, 0};
+        int[] d_out = new int[num_items];
+        int[] d_num_selected_out = new int[1];
+
+        int selected_index = 0;
+        int remaining_index = num_items - 1;
+        for (int i = 0; i < num_items; i++) {
+            if (d_flags[i] == 1) {
+                d_out[selected_index++] = d_in[i];
+            } else {
+                d_out[remaining_index--] = d_in[i];
             }
         }
-        return count_ptr;
+
+        d_num_selected_out[0] = selected_index;
+        
+        System.out.println(Arrays.toString(d_out));
+        System.out.println(d_num_selected_out[0]);
     }
     
     private static void swap(int i, int j, int... arr)

@@ -36,19 +36,6 @@ public class Tri_Overlap_Box
         
     }
     
-    public static boolean plane_overlap_box2(Vector3f n, float d, Point3f min, Point3f max) {
-        BoundingBox box = new BoundingBox(min, max);
-        
-        Vector3f boxHalfSize = box.getHalfExtents();
-        Vector3f boxCenter = box.getCenter().asVector3f();
-        float distance = Vector3f.dot(n, boxCenter) - d;
-        // If the absolute value of the distance is greater than the
-        // length of the box half size along the plane normal, then
-        // the box is on the outside of the plane
-        //return d0 * d1 <= 0.0f;        
-        return Math.abs(distance) <= Vector3f.dot(boxHalfSize, n);
-    }
-    
     public static boolean axis_test_x(  Point3f half_size,
                                         Vector3f e, Point3f f,
                                         Vector3f v0, Vector3f v1) {

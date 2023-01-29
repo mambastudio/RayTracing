@@ -12,7 +12,7 @@ import java.util.Arrays;
  * @author user
  */
 public class IntArray {
-    private final int[] array;
+    private int[] array;
     private final int offset;
     private int size;
             
@@ -75,6 +75,13 @@ public class IntArray {
         return array;
     }
     
+    public void setWholeArray(int[] array)
+    {
+        if(this.array.length != array.length)
+            throw new UnsupportedOperationException("no swap since the two arrays are not equal");
+        this.array = array;
+    }
+    
     public int size()
     {
         return size;
@@ -100,9 +107,31 @@ public class IntArray {
                                                ") > toIndex(" + toIndex + ")");
     }
     
+    public void swap(IntArray array)
+    {
+        if(this.array.length != array.getWholeArray().length)
+           throw new UnsupportedOperationException("no swap since the two arrays are not equal");
+        
+        int[] temp = this.array;
+        this.array = array.getWholeArray();
+        array.setWholeArray(temp);
+    }
+    
+    public static IntArray getArrayWithIndices(int size)
+    {
+        IntArray array = new IntArray(new int[size]);
+        for(int i = 0; i<array.size(); i++)
+            array.set(i, i);
+        return array;
+    }
+    
     @Override
     public String toString()
     {
-        return Arrays.toString(getCopyRangeArray());
+        StringBuilder builder = new StringBuilder();
+        int[] arr = getCopyRangeArray();
+        for(int i : arr)
+            builder.append(String.format("%6s",i));
+        return builder.toString();
     }
 }

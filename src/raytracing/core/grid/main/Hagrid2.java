@@ -88,7 +88,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
                     int y = ly + ((k / (sx)) % sy);
                     int z = lz + (k / ((sx) * sy));
                     new_ref_ids.set(i,  r); 
-                    new_cell_ids.set(i, x + grid_dims.x * (y + grid_dims.y * z));                    
+                    new_cell_ids.set(i, x + grid_dims.x * (y + grid_dims.y * z));    
                 }
             }
         }        
@@ -137,9 +137,12 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         for(int i = 0; i<num_top_cells + 1; i++)
             new_entries[i] = new Entry();
         
+        
+        
         // Filter out the references that do not intersect the cell they are in
         filter_refs(new_cell_ids, new_ref_ids, prims, new_cells, num_new_refs);
-                                
+        
+        
         Level level = new Level();
         level.ref_ids   = new_ref_ids;  
         level.cell_ids  = new_cell_ids; 
@@ -175,14 +178,13 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         update_log_dims(log_dims, num_top_cells);
         mark_kept_refs(cell_ids, entries, kept_flags, num_refs);
         
-       
         // Store the sub-cells starting index in the entries
         IntArray start_cell = new IntArray(new int[num_cells + 1]);
         for(int i = 0; i<num_cells; i++)
             start_cell.set(i, entries[i].log_dim == 0 ? 0 : 8);
         int num_new_cells = this.exclusiveScan(start_cell.getWholeArray());
         
-        update_entries(start_cell, entries, num_cells);
+        update_entries(start_cell, entries, num_cells);   
         
         // Partition the set of cells into the sets of those which will be split and those which won't
         IntArray tmp_ref_ids  = new IntArray(new int[num_refs * 2]);
@@ -193,9 +195,10 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         if(num_sel_refs != num_sel_cells)
             throw new UnsupportedOperationException("num_sel_refs is not equal to num_sel_cells");
         
-        swap(tmp_ref_ids, ref_ids);
-        swap(tmp_cell_ids, cell_ids);
-      
+        //Swap
+        tmp_ref_ids.swap(ref_ids);
+        tmp_cell_ids.swap(cell_ids);
+              
         int num_kept = num_sel_refs;
         levels.get(levels.size()-1).ref_ids  = ref_ids;
         levels.get(levels.size()-1).cell_ids = cell_ids;
