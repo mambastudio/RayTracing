@@ -10,6 +10,7 @@ import coordinate.utility.Value3Di;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import java.util.ArrayList;
 import java.util.Arrays;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3f;
@@ -391,6 +392,163 @@ public class GridAbstract2 {
                 new_cells[start + i] = cell; 
             }
         }
+    }
+    
+    /// Copy the references with an offset, different for each level
+    public void copy_refs(
+                            IntArray cell_ids,
+                            IntArray new_cell_ids,
+                            int cell_off,
+                            int num_kept) {
+        for(int id = 0; id<num_kept; id++)
+        {        
+            if (id >= num_kept) return;
+            new_cell_ids.set(id, cell_ids.get(id) + cell_off);
+        }
+    }
+    
+    /// Copy only the cells that are kept to another array of cells
+    public void copy_cells(
+                            Cell[] cells,
+                            IntArray start_cell,
+                            Cell[] new_cells,
+                            int cell_off,
+                            int num_cells) {
+        for(int id = 0; id<num_cells; id++)
+        {
+            if (id >= num_cells) return;
+
+            Cell cell = cells[id];
+            int start = start_cell.get(cell_off + id + 0);
+            int end   = start_cell.get(cell_off + id + 1);
+            if (start < end) 
+                new_cells[start] = cell;
+                
+        }
+    }
+    
+    /// Copy the voxel map entries and remap kept cells to their correct indices
+    public void copy_entries(Entry[] entries,
+                             IntArray start_cell,
+                             Entry[] new_entries,
+                             int cell_off,
+                             int next_level_off,
+                             int num_cells) {
+        for(int id = 0; id<num_cells; id++)
+        {
+            if (id >= num_cells) return;
+
+            Entry entry = entries[id];
+            if (entry.log_dim == 0) {
+                // Points to a cell
+                entry.begin = start_cell.get(cell_off + entry.begin);
+            } else {
+                // Points to another entry in the next level
+                entry.begin += next_level_off;
+            }
+            new_entries[id + cell_off] = entry;
+        }
+    }
+    
+    /// Remap references so that they map to the correct cells
+    public void remap_refs(
+                        IntArray cell_ids,
+                        IntArray start_cell,
+                        int num_refs) {
+        for(int id = 0; id<num_refs; id++)
+        {
+            if (id >= num_refs) return;
+
+            cell_ids.set(id, start_cell.get(cell_ids.get(id)));
+        }
+    }
+    
+    /// Mark the cells that are used as 'kept'
+    public void mark_kept_cells(
+                                Entry[] entries,
+                                IntArray kept_cells,
+                                int num_cells) {        
+        for(int id = 0; id<num_cells; id++)
+        {
+            if (id >= num_cells) return;
+            kept_cells.set(id, (entries[id].log_dim == 0) ? 1 : 0);
+        }
+    }
+    
+    public void concat_levels(ArrayList<Level> levels, Grid2 grid)
+    {
+        int num_levels = levels.size();
+
+        // Start with references
+        int total_refs = 0;
+        int total_cells = 0;
+        for (Level level : levels) {
+            total_refs  += level.num_kept;
+            total_cells += level.num_cells;
+        }
+        
+        // Copy primitive references as-is
+        IntArray ref_ids  = new IntArray(new int[total_refs]);
+        IntArray cell_ids = new IntArray(new int[total_refs]);
+        
+        for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_kept, i++) {
+            System.arraycopy(levels.get(i).ref_ids.getWholeArray(), 0, ref_ids.getWholeArray(), off, levels.get(i).num_kept);
+        }
+    
+        // Copy the cell indices with an offset
+        for (int i = 0, off = 0, cell_off = 0; i < num_levels; off += levels.get(i).num_kept, cell_off += levels.get(i).num_cells, i++) {
+            int num_kept = levels.get(i).num_kept;
+            if (num_kept != 0) {
+                copy_refs(levels.get(i).cell_ids, cell_ids.splitSubArrayFrom(off), cell_off, num_kept);
+                //DEBUG_SYNC();
+            }
+            levels.get(i).ref_ids = null;
+        }
+        
+        // Mark the cells at the leaves of the structure as kept
+        IntArray kept_cells = new IntArray(new int[total_cells + 1]);
+        
+        for (int i = 0, cell_off = 0; i < num_levels; cell_off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            mark_kept_cells(levels.get(i).entries, kept_cells.splitSubArrayFrom(cell_off), num_cells);
+            //DEBUG_SYNC();
+        }
+        
+        // Compute the insertion position of each cell
+        IntArray start_cell = new IntArray(new int[total_cells + 1]);
+        System.arraycopy(kept_cells.getWholeArray(), 0, start_cell.getWholeArray(), 0, total_cells + 1);    
+        int new_total_cells = exclusiveScan(start_cell.getWholeArray());
+        //mem.free(kept_cells);
+        
+        // Allocate new cells, and copy only the cells that are kept
+        Cell[] cells = new Cell[new_total_cells];
+        for (int i = 0, cell_off = 0; i < num_levels; cell_off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            copy_cells(levels.get(i).cells, start_cell, cells, cell_off, num_cells);
+            //DEBUG_SYNC();
+            //mem.free(levels[i].cells);
+        }
+        
+        Entry[] entries = new Entry[total_cells];
+        for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            int next_level_off = off + num_cells;
+            //copy_entries(levels.get(i).entries, start_cell, entries + off, off, next_level_off, num_cells);
+            copy_entries(levels.get(i).entries, start_cell, entries, off, next_level_off, num_cells);
+            //DEBUG_SYNC();
+            //mem.free(levels[i].entries);
+        }
+        
+        // Remap the cell indices in the references (which currently map to incorrect cells)
+        remap_refs(cell_ids, start_cell, total_refs);
+        //DEBUG_SYNC();
+
+        //mem.free(start_cell);
+
+        // Sort the references by cell (re-use old slots whenever possible)
+        IntArray tmp_ref_ids  = new IntArray(new int[total_refs]);
+        IntArray tmp_cell_ids = new IntArray(new int[total_refs]);
+        
     }
     
     public int __ffs(int value)

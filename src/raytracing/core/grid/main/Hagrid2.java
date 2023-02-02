@@ -300,7 +300,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         while(this.build_iter(prims, num_prims, dims, log_dims, levels))
             iter++;
         
-        //concat_levels(mem, levels, grid);
+        concat_levels(levels, grid);
         
         grid.dims = dims;
         grid.bbox = grid_bb;
