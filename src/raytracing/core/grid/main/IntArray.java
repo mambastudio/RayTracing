@@ -28,7 +28,7 @@ public class IntArray {
     private IntArray(IntArray intArray, int offset, int fromIndex, int toIndex)
     {
         rangeCheckBound(fromIndex, toIndex, intArray.size);
-        this.array = intArray.getWholeArray();
+        this.array = intArray.array();
         this.offset = offset + fromIndex;
         this.size = toIndex - fromIndex;
     }
@@ -70,12 +70,12 @@ public class IntArray {
         return Arrays.copyOfRange(array, offset, offset + size);
     }
     
-    public int[] getWholeArray()
+    public int[] array()
     {
         return array;
     }
     
-    public void setWholeArray(int[] array)
+    public void arraySet(int[] array)
     {
         if(this.array.length != array.length)
             throw new UnsupportedOperationException("no swap since the two arrays are not equal");
@@ -109,12 +109,12 @@ public class IntArray {
     
     public void swap(IntArray array)
     {
-        if(this.array.length != array.getWholeArray().length)
+        if(this.array.length != array.array().length)
            throw new UnsupportedOperationException("no swap since the two arrays are not equal");
         
         int[] temp = this.array;
-        this.array = array.getWholeArray();
-        array.setWholeArray(temp);
+        this.array = array.array();
+        array.arraySet(temp);
     }
     
     public static IntArray getArrayWithIndices(int size)

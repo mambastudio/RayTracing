@@ -492,7 +492,7 @@ public class GridAbstract2 {
         IntArray cell_ids = new IntArray(new int[total_refs]);
         
         for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_kept, i++) {
-            System.arraycopy(levels.get(i).ref_ids.getWholeArray(), 0, ref_ids.getWholeArray(), off, levels.get(i).num_kept);
+            System.arraycopy(levels.get(i).ref_ids.array(), 0, ref_ids.array(), off, levels.get(i).num_kept);
         }
     
         // Copy the cell indices with an offset
@@ -514,11 +514,12 @@ public class GridAbstract2 {
             //DEBUG_SYNC();
         }
         
+        
         // Compute the insertion position of each cell
         IntArray start_cell = new IntArray(new int[total_cells + 1]);
-        System.arraycopy(kept_cells.getWholeArray(), 0, start_cell.getWholeArray(), 0, total_cells + 1);    
-        int new_total_cells = exclusiveScan(start_cell.getWholeArray());
-        //mem.free(kept_cells);
+        System.arraycopy(kept_cells.array(), 0, start_cell.array(), 0, total_cells + 1);    
+        int new_total_cells = exclusiveScan(start_cell.array());
+        //mem.free(kept_cells);       
         
         // Allocate new cells, and copy only the cells that are kept
         Cell[] cells = new Cell[new_total_cells];
@@ -527,6 +528,7 @@ public class GridAbstract2 {
             copy_cells(levels.get(i).cells, start_cell, cells, cell_off, num_cells);
             //DEBUG_SYNC();
             //mem.free(levels[i].cells);
+            levels.get(i).cells = null;
         }
         
         Entry[] entries = new Entry[total_cells];
@@ -537,6 +539,7 @@ public class GridAbstract2 {
             copy_entries(levels.get(i).entries, start_cell, entries, off, next_level_off, num_cells);
             //DEBUG_SYNC();
             //mem.free(levels[i].entries);
+            levels.get(i).entries = null;
         }
         
         // Remap the cell indices in the references (which currently map to incorrect cells)
@@ -548,7 +551,8 @@ public class GridAbstract2 {
         // Sort the references by cell (re-use old slots whenever possible)
         IntArray tmp_ref_ids  = new IntArray(new int[total_refs]);
         IntArray tmp_cell_ids = new IntArray(new int[total_refs]);
-        
+        IntArray new_ref_ids = new IntArray(tmp_ref_ids.array());
+        IntArray new_cell_ids = new IntArray(tmp_cell_ids.array());
     }
     
     public int __ffs(int value)

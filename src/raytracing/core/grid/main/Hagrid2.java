@@ -107,8 +107,8 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         
         count_new_refs(bboxes, new_ref_counts, num_prims);  
         
-        System.arraycopy(new_ref_counts.getWholeArray(), 0, start_emit.getWholeArray(), 0, new_ref_counts.size());        
-        int num_new_refs = exclusiveScan(start_emit.getWholeArray());
+        System.arraycopy(new_ref_counts.array(), 0, start_emit.array(), 0, new_ref_counts.size());        
+        int num_new_refs = exclusiveScan(start_emit.array());
         
         IntArray new_ref_ids  = new IntArray(new int[2 * num_new_refs]);
         IntArray new_cell_ids = new_ref_ids.splitSubArrayFrom(num_new_refs);       
@@ -121,7 +121,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         compute_log_dims(refs_per_cell, log_dims, snd_density, num_top_cells);
                         
         // Find the maximum sub-level resolution
-        grid_shift.set(0, Arrays.stream(log_dims.getWholeArray(), 0, num_top_cells).reduce(Integer.MIN_VALUE, (a, b) -> Math.max(a, b)));
+        grid_shift.set(0, Arrays.stream(log_dims.array(), 0, num_top_cells).reduce(Integer.MIN_VALUE, (a, b) -> Math.max(a, b)));
         
         cell_size = grid_bb.extents().div(new Vector3f(
                 dims.x << grid_shift.get(0),
@@ -182,7 +182,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         IntArray start_cell = new IntArray(new int[num_cells + 1]);
         for(int i = 0; i<num_cells; i++)
             start_cell.set(i, entries[i].log_dim == 0 ? 0 : 8);
-        int num_new_cells = this.exclusiveScan(start_cell.getWholeArray());
+        int num_new_cells = this.exclusiveScan(start_cell.array());
         
         update_entries(start_cell, entries, num_cells);   
         
@@ -225,7 +225,7 @@ public class Hagrid2 extends GridAbstract2 implements HagridInterface2{
         // Store the sub-cells starting index in the entries        
         for(int i = 0; i<split_masks.size(); i++)
             start_split.set(i, __popc(split_masks.get(i)));
-        int num_new_refs = this.exclusiveScan(start_split.getWholeArray());
+        int num_new_refs = this.exclusiveScan(start_split.array());
                 
         if(!(num_new_refs <= 8 * num_split))
             throw new UnsupportedOperationException();

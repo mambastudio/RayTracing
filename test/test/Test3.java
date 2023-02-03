@@ -6,6 +6,8 @@
 package test;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.stream.IntStream;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3f;
 import raytracing.core.grid.main.IntArray;
@@ -19,9 +21,10 @@ public class Test3 {
     public static void main(String... args)
     {
         //testIntArray();
-        testSwapIntArray();
+        //testSwapIntArray();
         //testTriangleBox();
         //testPartition();
+        sortPair();
         //test();
         //swapTwoArrays();
         //int mask = ballot_sync(new boolean[]{true, false, false});        
@@ -110,14 +113,14 @@ public class Test3 {
             
     public static int partition(IntArray input, IntArray output, int n, IntArray flags)
     {
-        System.arraycopy(input.getWholeArray(), 0, output.getWholeArray(), 0, n);
+        System.arraycopy(input.array(), 0, output.array(), 0, n);
         int start = 0;
         int mid = start;
         for(int i = start; i < n; i++)
         {
             if(flags.get(i)!=0)
             {
-                swap(i, mid, output.getWholeArray());                
+                swap(i, mid, output.array());                
                 mid++;
             }
         }
@@ -137,6 +140,28 @@ public class Test3 {
         }
 
         return selected_index;
+    }
+    
+    public static void sortPair()
+    {
+        int[]    key    ={9, 2, 5, 6, 3};
+        int[]    value  ={1, 7, 4, 9, 8};
+        
+        int[] valueOutput =
+            // original indices: ascending numbers from 0 to array length
+            IntStream.range(0, key.length)
+            // sort using the values of the first array
+           .boxed().sorted(Comparator.comparingInt(ix->key[ix]))
+            // apply to the values of the second array
+           .mapToInt(ix->value[ix])
+            // create a result array
+           .toArray();
+        int[] keyOutput = Arrays.stream(key).sorted().toArray();
+        
+        
+        
+        System.out.println(Arrays.toString(keyOutput));                
+        System.out.println(Arrays.toString(valueOutput));
     }
     
     public static void test()
