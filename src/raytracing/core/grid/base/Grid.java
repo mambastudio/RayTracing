@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.main;
+package raytracing.core.grid.base;
 
 /**
  *
  * @author user
  */
-public interface ConsumerVoid {
-    public void accept();
+public class Grid {
+    
 }

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.main;
+package raytracing.core.grid.abstraction;
 
 /**
  *
  * @author user
  */
-public interface ConsumerInt3 {
-    public void function(int x, int y, int z);
+public class GridAbstraction {
+    
 }

@@ -3,16 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.main;
+package raytracing.core.grid;
 
 /**
  *
  * @author user
- * @param <T>
- * @param <U>
- * @param <V>
  */
-@FunctionalInterface
-public interface Consumer3<T, U, V> {
-    void accept(T t, U u, V v);
+public class Build {
+    
 }

@@ -3,15 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/primitive/TriangleMesh.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/IntArray.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/test/test/TestIrregularGrid.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Entry.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Cell.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Hagrid2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/HagridInterface2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/GridAbstract2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/test/test/Test3.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid/Flatten.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/coordinate/Point3i.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid/Merge.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid/abstraction/GridAbstraction.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid/abstraction/HagridConstruction.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid/Build.java</file>
         </group>
     </open-files>
 </project-private>
