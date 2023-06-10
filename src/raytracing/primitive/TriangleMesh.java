@@ -42,37 +42,6 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f,
         this.initCoordList(Point3f.class, Vector3f.class, Point2f.class, sizeP, sizeN, sizeT, sizeF);
     }
     
-    public Vector3f getNorm(int primID)
-    {
-        Point3f p1 = getVertex1(primID);
-        Point3f p2 = getVertex2(primID);
-        Point3f p3 = getVertex3(primID);
-        
-        Vector3f e1 = Point3f.sub(p2, p1);
-        Vector3f e2 = Point3f.sub(p3, p1);
-
-        return Vector3f.cross(e1, e2).normalize();
-        
-    }
-    
-    public Vector3f e1(int primID)
-    {
-        Point3f p1 = getVertex1(primID);
-        Point3f p2 = getVertex2(primID);
-        
-        return Point3f.sub(p2, p1);
-        
-    }
-    
-    public Vector3f e2(int primID)
-    {
-        Point3f p1 = getVertex1(primID);
-        Point3f p3 = getVertex3(primID);
-        
-        return  Point3f.sub(p3, p1);
-    }
-    
-    
     
     @Override
     public void addPoint(Point3f p) {
@@ -135,18 +104,16 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f,
 
     @Override
     public boolean intersect(Ray r, int primID, Intersection isect) {
-        Point3f p1 = getVertex1(primID);
-        Point3f p2 = getVertex2(primID);
-        Point3f p3 = getVertex3(primID);
+        Triangle triangle = getTriangle(primID);
         float[] tuv = new float[3];
         
-        if(mollerIntersection(r, tuv, p1, p2, p3))
+        if(triangle.intersect(r, tuv))
         {
             r.setMax(tuv[0]);
 
             isect.u = tuv[1];
             isect.v = tuv[2];
-            isect.n = getNormal(p1, p2, p3, primID, new Value2Df(tuv[1], tuv[2]));
+            isect.n = triangle.getNormal(new Value2Df(tuv[1], tuv[2]));
             isect.p = r.getPoint();
             isect.id = primID;
             isect.primitive = this;
@@ -158,12 +125,9 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f,
     }
 
     @Override
-    public boolean intersectP(Ray r, int primID) {
-        Point3f p1 = getVertex1(primID);
-        Point3f p2 = getVertex2(primID);
-        Point3f p3 = getVertex3(primID);
-                
-        return mollerIntersection(r, null, p1, p2, p3);    
+    public boolean intersectP(Ray r, int primID) {       
+        Triangle triangle = getTriangle(primID);
+        return triangle.intersect(r);                
     }
 
     @Override
@@ -192,71 +156,20 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f,
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    
-    public Vector3f getNormal(Point3f p1, Point3f p2, Point3f p3, int primID, Value2Df uv)
-    {        
-        if(hasNormal(primID) && hasUV(primID))
-        {
-            Vector3f n1 = getNormal1(primID);
-            Vector3f n2 = getNormal2(primID);
-            Vector3f n3 = getNormal3(primID);
-            
-            return n1.mul(1 - uv.x - uv.y).add(n2.mul(uv.x).add(n3.mul(uv.y)));            
-        }
-        else
-        {
-            Vector3f e1 = Point3f.sub(p2, p1);
-            Vector3f e2 = Point3f.sub(p3, p1);
-
-            return Vector3f.cross(e1, e2).normalize();
-        }
-    } 
-    
-    public boolean mollerIntersection(Ray r, float[] tuv, Point3f p1, Point3f p2, Point3f p3)
-    {
-        Vector3f e1, e2, h, s, q;
-        double a, f, b1, b2;
-
-        e1 = Point3f.sub(p2, p1);
-        e2 = Point3f.sub(p3, p1);
-        h = Vector3f.cross(r.d, e2);
-        a = Vector3f.dot(e1, h);
-
-        if (a > -0.0000001 && a < 0.0000001)
-            return false;
-
-        f = 1/a;
-        
-        s = Point3f.sub(r.o, p1);
-	b1 = f * (Vector3f.dot(s, h));
-
-        if (b1 < 0.0 || b1 > 1.0)
-            return false;
-
-        q = Vector3f.cross(s, e1);
-	b2 = f * Vector3f.dot(r.d, q);
-
-	if (b2 < 0.0 || b1 + b2 > 1.0)
-            return false;
-
-	float t = (float) (f * Vector3f.dot(e2, q));
-        
-        if(r.isInside(t)) 
-        {
-            if(tuv != null)
-            {
-                tuv[0] = t;
-                tuv[1] = (float) b1;
-                tuv[2] = (float) b2;
-            }
-            return true;
-        }
-        else
-            return false;
-    }
-
     @Override
     public Triangle getTriangle(int index) {
-        return new Triangle(this.getVertex1(index), this.getVertex2(index), this.getVertex3(index));
+        if(this.hasNormal(index))
+            return new Triangle(
+                    this.getVertex1(index), 
+                    this.getVertex2(index), 
+                    this.getVertex3(index),
+                    this.getNormal1(index),
+                    this.getNormal2(index),
+                    this.getNormal3(index));
+        else
+            return new Triangle(
+                    this.getVertex1(index), 
+                    this.getVertex2(index), 
+                    this.getVertex3(index));
     }
 }

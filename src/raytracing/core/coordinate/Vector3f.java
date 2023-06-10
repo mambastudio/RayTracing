@@ -21,6 +21,8 @@ public class Vector3f  implements VCoord<Point3f, Vector3f>{
     public Vector3f(float a) {x = a; y = a; z = a;}
     public Vector3f(float a, float b, float c) {x = a; y = b; z = c;}
     public Vector3f(Vector3f a) {x = a.x; y = a.y; z = a.z;}
+    public Vector3f(Point3f a){x = a.x; y = a.y; z = a.z;}
+    public Vector3f(Point3i a){x = a.x; y = a.y; z = a.z;}
     public Vector3f(Value3Df a){x = a.x; y = a.y; z = a.z;}
     public Vector3f(Value3Di a){x = a.x; y = a.y; z = a.z;}
 

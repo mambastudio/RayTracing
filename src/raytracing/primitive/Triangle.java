@@ -21,20 +21,25 @@ public class Triangle extends TriangleShape<Point3f, Vector3f, Ray>  {
     {
         super(p1, p2, p3);        
     }
+    
+    protected Triangle(Point3f p1, Point3f p2, Point3f p3, Vector3f v1, Vector3f v2, Vector3f v3)
+    {
+        super(p1, p2, p3, v1, v2, v3);        
+    }
 
     @Override
     public Vector3f e1() {
-        return Point3f.sub(p1, p2);
+        return Point3f.sub(pp1, pp2);
     }
 
     @Override
     public Vector3f e2() {
-        return Point3f.sub(p3, p1);
+        return Point3f.sub(pp3, pp1);
     }
     
     public Point3f v0()
     {
-        return p1;
+        return pp1;
     }
     
     public float nx()
@@ -58,7 +63,7 @@ public class Triangle extends TriangleShape<Point3f, Vector3f, Ray>  {
     public BoundingBox getBound()
     {
         BoundingBox b = new BoundingBox();
-        b.include(p1, p2, p3);
+        b.include(pp1, pp2, pp3);
         return b;
     }
 }
