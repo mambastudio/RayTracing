@@ -8,6 +8,7 @@ package raytracing.renderer;
 import bitmap.Color;
 import bitmap.display.DynamicDisplay;
 import bitmap.image.BitmapRGB;
+import static java.lang.Math.min;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import raytracing.core.coordinate.Camera;
@@ -15,6 +16,7 @@ import raytracing.core.Intersection;
 import raytracing.core.coordinate.Ray;
 import raytracing.generic.Renderer;
 import raytracing.core.Scene;
+import raytracing.core.coordinate.Point3f;
 import thread.model.KernelThread;
 
 /**
@@ -118,6 +120,27 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
         resumeKernel();        
     }
     
+    //heat map
+    Color gradient(float k) {
+        Point3f g[] = new Point3f[]{
+            new Point3f(0, 0, 1),            //blue
+            new Point3f(0, 1, 1),
+            new Point3f(0, 0.50196f, 0),     //green
+            new Point3f(1, 1, 0),
+            new Point3f(1, 0, 0)             //red
+        };
+        int n = g.length;
+        float s = 1.0f / n;
+
+        int i = min(n - 1, (int)(k * n));
+        int j = min(n - 1, i + 1);
+
+        float t = (k - i * s) / s;
+        Point3f c =  g[i].mul(1.0f - t).addS(g[j].mul(t));
+
+        return new Color(c.x, c.y, c.z);
+    }
+    
     private Color doSomething(Camera camera, int x, int y, int w, int h)
     {        
         Ray ray = camera.getFastRay(x, y, w, h, new Ray());         
@@ -125,7 +148,8 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
         Intersection isect = new Intersection();
         boolean hit = scene.intersect(ray, isect);
                     
-        Color col = null;
+        Color col = gradient(Math.min(100, isect.data)/100.f);
+        /*
         if(hit)
         {
             float coeff = Math.abs(ray.d.dot(isect.n));            
@@ -133,7 +157,7 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
         }
         else
             col = Color.BLACK;
-        
+        */
         return col;
     }
 

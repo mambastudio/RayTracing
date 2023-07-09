@@ -78,6 +78,16 @@ public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, Boundi
         dest.z = 0.5f * (minimum.z + maximum.z);
         return dest;
     }
+    
+    public final void enlargeUlps() {
+        final float eps = 0.001f;
+        minimum.x -= Math.max(eps, Math.ulp(minimum.x));
+        minimum.y -= Math.max(eps, Math.ulp(minimum.y));
+        minimum.z -= Math.max(eps, Math.ulp(minimum.z));
+        maximum.x += Math.max(eps, Math.ulp(maximum.x));
+        maximum.y += Math.max(eps, Math.ulp(maximum.y));
+        maximum.z += Math.max(eps, Math.ulp(maximum.z));
+    }
 
     @Override
     public float getCenter(int dim) {

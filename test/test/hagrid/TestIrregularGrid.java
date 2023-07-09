@@ -20,9 +20,11 @@ public class TestIrregularGrid {
         OBJParser parser = new OBJParser();
         TriangleMesh mesh = new TriangleMesh();
        // parser.read("C:\\Users\\user\\Documents\\3D Scenes\\mori_knob\\testObj.obj", mesh);
-        parser.read("C:\\Users\\user\\Documents\\3D Scenes\\sponza\\sponza.obj", mesh);
+        parser.read("C:\\Users\\user\\Documents\\3D Scenes\\box\\Mori.obj", mesh);
         
         HagridConstruction construction = new HagridConstruction(new Hagrid());
         construction.initialiseGrid(mesh);
+        
+        
     }
 }

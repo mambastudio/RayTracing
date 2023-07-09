@@ -57,6 +57,7 @@ public class Triangle extends TriangleShape<Point3f, Vector3f, Ray>  {
         return n.z;
     }
     
+    
     /// Packs the normal components into a float3 structure.
     public Vector3f normal() { return new Vector3f(nx(), ny(), nz()); }
     
@@ -64,6 +65,7 @@ public class Triangle extends TriangleShape<Point3f, Vector3f, Ray>  {
     {
         BoundingBox b = new BoundingBox();
         b.include(pp1, pp2, pp3);
+        
         return b;
     }
 }

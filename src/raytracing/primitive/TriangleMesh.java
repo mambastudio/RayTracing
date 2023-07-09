@@ -11,6 +11,7 @@ import coordinate.list.CoordinateFloatList;
 import coordinate.list.IntList;
 import coordinate.utility.Value2Df;
 import raytracing.accel.BVHPlocTree;
+import raytracing.accel.IrregularGrid;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.Point2f;
@@ -147,7 +148,7 @@ public final class TriangleMesh extends AbstractMesh<Point3f, Vector3f, Point2f,
 
     @Override
     public void buildAccelerator() {
-        accelerator = new BVHPlocTree();
+        accelerator = new IrregularGrid();
         accelerator.build(this);
     }
 

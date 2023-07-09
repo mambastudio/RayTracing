@@ -37,6 +37,11 @@ public class Cell {
         //return Boolean.toString(hasReference());
     }
     
+    public String minmax()
+    {
+        return String.format("(min %1s, max %1s)", min, max);
+    }
+    
     public Cell copy()
     {
         return new Cell(min.copy(), begin, max.copy(), end);

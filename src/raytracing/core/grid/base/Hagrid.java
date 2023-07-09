@@ -6,7 +6,6 @@
 package raytracing.core.grid.base;
 
 import raytracing.core.coordinate.BoundingBox;
-import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Point3i;
 import raytracing.core.coordinate.Vector3f;
 
@@ -15,8 +14,8 @@ import raytracing.core.coordinate.Vector3f;
  * @author user
  */
 public class Hagrid {
-    public float top_density = 0.12f;
-    public float snd_density = 3.2f;
+    public float top_density = 0.15f;
+    public float snd_density = 3.0f;
     public float alpha = 0.995f;
     public int exp_iters = 3;
     
@@ -38,7 +37,7 @@ public class Hagrid {
         irregular_grid = new Grid();
     }
     
-    public Grid getIrregularGrid()
+    public Grid grid()
     {
         return irregular_grid;
     }

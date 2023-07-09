@@ -28,6 +28,7 @@ public class Level {
         builder.append("Level ").append("\n");
         builder.append("  num of references: ").append(num_refs).append("\n");
         builder.append("  num of cells:      ").append(num_cells).append("\n");
+        builder.append("  num of kept:       ").append(num_kept).append("\n");
         if(entries != null)
             builder.append("  num of entries:    ").append(entries.length).append("\n");
         

@@ -7,11 +7,9 @@ package raytracing.core.grid;
 
 import coordinate.list.IntegerList;
 import coordinate.list.ObjectList;
-import coordinate.println.PrintInteger;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.util.Arrays;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Point3i;
@@ -90,14 +88,15 @@ public class Build extends GridAbstract {
     /// Computes the range of cells that intersect the given box
     public Range compute_range(Point3i dims, BoundingBox grid_bb, BoundingBox obj_bb) {
         
-        Vector3f inv = new Vector3f(dims).div(grid_bb.extents());
-             
+        Vector3f inv = hagrid.grid().grid_inv();
+        
         int lx = max((int)((obj_bb.minimum.x - grid_bb.minimum.x) * inv.x), 0);
         int ly = max((int)((obj_bb.minimum.y - grid_bb.minimum.y) * inv.y), 0);
         int lz = max((int)((obj_bb.minimum.z - grid_bb.minimum.z) * inv.z), 0);
         int hx = min((int)((obj_bb.maximum.x - grid_bb.minimum.x) * inv.x), dims.x - 1);
         int hy = min((int)((obj_bb.maximum.y - grid_bb.minimum.y) * inv.y), dims.y - 1);
         int hz = min((int)((obj_bb.maximum.z - grid_bb.minimum.z) * inv.z), dims.z - 1);
+        
         
         return new Range(lx, ly, lz, hx, hy, hz);
     }
@@ -114,12 +113,17 @@ public class Build extends GridAbstract {
     /// Computes grid dimensions based on the formula by Cleary et al.
     public Point3i compute_grid_dims(BoundingBox bb, int num_prims, float density) {
         Vector3f extents = bb.extents();
+        extents.x = extents.x != 0 ? extents.x : 1;
+        extents.y = extents.y != 0 ? extents.y : 1;
+        extents.z = extents.z != 0 ? extents.z : 1;
+        
         float volume = extents.x * extents.y * extents.z;
+        
         float ratio = (float) cbrt(density * num_prims / volume);
         return Point3i.max(new Point3i(1), new Point3i(
-                (int)(extents.x * ratio),
-                (int)(extents.y * ratio),
-                (int)(extents.z * ratio)));        
+                extents.x * ratio,
+                extents.y * ratio,
+                extents.z * ratio));        
     }
     
     /// Compute an over-approximation of the number of references
@@ -134,7 +138,7 @@ public class Build extends GridAbstract {
             if (id >= num_prims) return;
             
             BoundingBox ref_bb = bboxes.get(id);//load_bbox(bboxes + id);
-            Range range  = compute_range(hagrid.grid_dims, hagrid.grid_bbox, ref_bb);
+            Range range  = compute_range(hagrid.grid_dims, hagrid.grid_bbox, ref_bb);            
             counts.set(id, Math.max(0, range.size()));               
         }    
     }
@@ -153,11 +157,6 @@ public class Build extends GridAbstract {
 
             int cell_id = cell_ids.get(id);
             if (cell_id < 0) continue;
-            
-            if(cells[cell_id] == null)
-            {
-                System.out.println("adsfasdf");
-            }
             
             Point3i cell_min = cells[cell_id].min;           
                         
@@ -219,7 +218,7 @@ public class Build extends GridAbstract {
                         new Point3f((i & 1) != 0 ? cell_max.x : middle.x,
                                     (i & 2) != 0 ? cell_max.y : middle.y,
                                     (i & 4) != 0 ? cell_max.z : middle.z));
-                if (!prim.planeBoxIntersection(bbox)) mask &= ~(1 << i);
+                if (!prim.getBound().intersects(bbox)) mask &= ~(1 << i);
 
                 // Skip non-intersected children
                 int skip = __ffs(mask >> (i + 1));
@@ -306,7 +305,7 @@ public class Build extends GridAbstract {
                 // Points to another entry in the next level
                 entry.begin += next_level_off;
             }
-            new_entries[id + cell_off] = entry;
+            new_entries[id + cell_off] = entry.copy();
         }
     }
     
@@ -347,8 +346,8 @@ public class Build extends GridAbstract {
             //Very strange method. In the cuda code, it seems quite complex
             if (start < end) 
             {
-                BoundingBox ref_bb = bboxes.get(id);
-                range  = compute_range(hagrid.grid_dims, hagrid.grid_bbox, ref_bb);
+                BoundingBox ref_bb = bboxes.get(id).copy(); 
+                range  = compute_range(hagrid.grid().grid_dims(), hagrid.grid().bbox, ref_bb);
                              
                 int x = range.lx;
                 int y = range.ly;    
@@ -449,8 +448,8 @@ public class Build extends GridAbstract {
             BoundingBox bbox = new BoundingBox(
                     hagrid.grid_bbox.minimum.add(new Vector3f(cell.min).mul(hagrid.cell_size)),
                     hagrid.grid_bbox.minimum.add(new Vector3f(cell.max).mul(hagrid.cell_size)));    
-                                  
-            boolean intersect = prim.planeBoxIntersection(bbox);
+            
+            boolean intersect = prim.getBound().intersects(bbox);//prim.planeBoxIntersection(bbox);
             if (!intersect) {
                 cell_ids.set(id, -1);
                 ref_ids.set(id, -1);                
@@ -542,10 +541,11 @@ public class Build extends GridAbstract {
         log_dims.resize(num_top_cells + 1);
         
         count_new_refs(bboxes, new_ref_counts, prims.getSize());  //new references generated based on how many cells each ref overlaps      
+        
         new_ref_counts.copyTo(start_emit).shiftRight(1); //copy to and shift to the right
         int num_new_refs = start_emit.prefixSum(0, prims.getSize() + 1); 
                 
-        // We are creating cells and their references of top level
+        // We are creating cells and their references of top level        
         IntegerList new_ref_ids  = new IntegerList(new int[2 * num_new_refs]); 
         IntegerList new_cell_ids = new_ref_ids.getSubListFrom(num_new_refs);   
         emit_new_refs(bboxes, start_emit, new_ref_ids, new_cell_ids, prims.getSize()); //insert the initial references into the new cells 
@@ -558,6 +558,7 @@ public class Build extends GridAbstract {
                 
         // Find the max sub-level resolution
         grid_shift[0] = log_dims.reduce(0, (a, b) -> Math.max(a, b));
+        hagrid.grid().shift = grid_shift[0];
         
         this.hagrid.cell_size = grid_bb.extents().div(new Vector3f(dims.leftShift(grid_shift[0])));
         this.hagrid.grid_shift = grid_shift[0];
@@ -667,22 +668,16 @@ public class Build extends GridAbstract {
                 
         IntegerList new_ref_ids = new IntegerList(new int[num_new_refs * 2]);
         IntegerList new_cell_ids = new_ref_ids.getSubListFrom(num_new_refs);
-        
-        //not in original code, num_new_refs should always be bigger than previous level
-        boolean skip = false;
-        if(!levels.isEmpty() && num_new_refs < levels.back().num_refs)
-            skip = true;
-        //if(!skip) is not in original code
-        if(!skip)
-            split_refs(
-                    cell_ids.getSubListFrom(num_kept), 
-                    ref_ids.getSubListFrom(num_kept), 
-                    entries, 
-                    split_masks, 
-                    start_split, 
-                    new_cell_ids, 
-                    new_ref_ids, 
-                    num_split);
+                
+        split_refs(
+                cell_ids.getSubListFrom(num_kept), 
+                ref_ids.getSubListFrom(num_kept), 
+                entries, 
+                split_masks, 
+                start_split, 
+                new_cell_ids, 
+                new_ref_ids, 
+                num_split);
         
         
         // Emission of the new cells
@@ -692,15 +687,7 @@ public class Build extends GridAbstract {
                 
         for(int i = 0; i<num_new_cells + 1; i++)
             new_entries[i] = new Entry();
-        
-        /*
-        PrintInteger println = new PrintInteger(cell_ids.trimCopy());
-        println.setPrecision(5);
-        println.printArray();
-        */
-        
-       // System.out.println(Arrays.toString(new_cells));
-                
+                        
         Level level = new Level();
         level.ref_ids   = new_ref_ids;         
         level.cell_ids  = new_cell_ids;        
@@ -711,7 +698,7 @@ public class Build extends GridAbstract {
         level.num_cells = num_new_cells;     
         
         levels.add(level);
-        
+                
         return true;        
     }
     
@@ -731,7 +718,6 @@ public class Build extends GridAbstract {
         IntegerList cell_ids = new IntegerList(new int[total_refs]);
         for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_kept, i++) {   
             levels.get(i).ref_ids.copyTo(levels.get(i).num_kept, ref_ids.getSubListFrom(off));
-            //System.arraycopy(levels.get(i).ref_ids.array(), 0, ref_ids.array(), off, levels.get(i).num_kept);
         }
         
         // Copy the cell indices with an offset       
@@ -790,7 +776,7 @@ public class Build extends GridAbstract {
         IntegerList new_cell_ids = tmp_cell_ids;        
         IntegerList.sort_pairs(cell_ids, ref_ids, new_cell_ids, new_ref_ids);
         
-        if (!ref_ids.equals(new_ref_ids))  //ref_ids and cell_ids don't share same array hence once can swap both
+        if (!ref_ids.equals(new_ref_ids))  //ref_ids and cell_ids don't share same array hence one can swap both
             ref_ids.swap(tmp_ref_ids);           
         if (!cell_ids.equals(new_cell_ids)) 
             cell_ids.swap(tmp_cell_ids);  
@@ -825,15 +811,18 @@ public class Build extends GridAbstract {
         System.out.println(grid_bb);
         
         Point3i dims = compute_grid_dims(grid_bb, prims.getSize(), hagrid.top_density);
+        
+        
         // Round to the next multiple of 2 on each dimension (in order to align the memory)
         dims.x = (dims.x % 2) != 0 ? dims.x + 1 : dims.x;
         dims.y = (dims.y % 2) != 0 ? dims.y + 1 : dims.y;
         dims.z = (dims.z % 2) != 0 ? dims.z + 1 : dims.z;
         
-        // Slightly enlarge the bounding box of the grid
-        Vector3f extents = grid_bb.extents();
-        grid_bb.minimum = grid_bb.minimum.sub(extents.mul(0.001f));
-        grid_bb.maximum = grid_bb.maximum.add(extents.mul(0.001f));
+        // Slightly enlarge the bounding box of the grid        
+        grid_bb.enlargeUlps();
+                
+        hagrid.grid().bbox = grid_bb;
+        hagrid.grid().dims = dims;
         
         this.hagrid.grid_bbox = grid_bb;
         this.hagrid.grid_dims = dims;
@@ -843,16 +832,15 @@ public class Build extends GridAbstract {
         ObjectList<Level> levels = new ObjectList();
         
         // Build top level
-        first_build_iter(hagrid.snd_density, prims, bboxes, grid_bb, dims, log_dims, gridd_shift, levels);
+        first_build_iter(hagrid.snd_density, prims, bboxes, hagrid.grid().bbox, dims, log_dims, gridd_shift, levels);
         
         int iter = 1; //build iterations
         while(build_iter(prims, dims, log_dims, levels, iter)) 
             iter++;   
         System.out.println("iteration " +iter); 
         
-        concat_levels(levels, hagrid.getIrregularGrid());
+        concat_levels(levels, hagrid.grid());
                    
-        hagrid.getIrregularGrid().bbox = grid_bb;
-        hagrid.getIrregularGrid().dims = dims;
+        System.out.println(hagrid.grid().ref_ids.max());
     }
 }

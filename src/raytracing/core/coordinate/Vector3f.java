@@ -26,13 +26,10 @@ public class Vector3f  implements VCoord<Point3f, Vector3f>{
     public Vector3f(Value3Df a){x = a.x; y = a.y; z = a.z;}
     public Vector3f(Value3Di a){x = a.x; y = a.y; z = a.z;}
 
-    public static Vector3f cross(Vector3f a, Vector3f b)
-    {
-        return a.cross(b);
-    }
-    
+    public static Vector3f cross(Vector3f a, Vector3f b){return a.cross(b);}    
     public static float dot(Vector3f a, Vector3f b) {return a.x*b.x + a.y*b.y + a.z*b.z;}
-
+    public static Vector3f min(Vector3f a, Vector3f b){return (Vector3f) VCoord.min3(a, b);}
+    public static Vector3f max(Vector3f a, Vector3f b){return (Vector3f) VCoord.max3(a, b);}
     
     @Override
     public Vector3f getCoordInstance() {

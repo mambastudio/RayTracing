@@ -26,4 +26,9 @@ public class Entry {
         this.log_dim = log_dim;
         this.begin = begin;
     }
+    
+    public Entry copy()
+    {
+        return new Entry(log_dim, begin);
+    }
 }
