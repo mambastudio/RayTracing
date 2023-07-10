@@ -2,16 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/primitive/TriangleMesh.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/IntArray.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/test/test/TestIrregularGrid.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Entry.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Cell.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/Hagrid2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/HagridInterface2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/main/GridAbstract2.java</file>
-            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/test/test/Test3.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
