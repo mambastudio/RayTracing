@@ -9,6 +9,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 /**
@@ -35,6 +37,12 @@ public class RayTracing extends Application{
         controller = (RayTracingFXMLController)loader.getController();
                         
         Scene scene = new Scene(root); 
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, ke->{
+            if (ke.getCode()== KeyCode.DIGIT1) 
+                controller.getAPI().getRenderer().setHeatmap(false);            
+            else if(ke.getCode() == KeyCode.DIGIT2)
+                controller.getAPI().getRenderer().setHeatmap(true);
+        });
         
         primaryStage.setScene(scene);        
         primaryStage.setTitle("Simple Ray Tracer");

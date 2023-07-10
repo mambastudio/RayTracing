@@ -25,6 +25,7 @@ public abstract class API <D extends AbstractDisplay, R  extends Renderer<D>>
     
     public abstract void setPrimitive(Primitive primitive);     
     public abstract void setRenderer(R renderer);
+    public abstract R getRenderer();
     
     public BoundingBox getWorldBound()
     {

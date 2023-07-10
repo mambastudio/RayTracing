@@ -28,6 +28,7 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
     DynamicDisplay display;
     Scene scene;
     boolean fast;
+    boolean heatmap;
     
     @Override
     public void execute() {
@@ -81,7 +82,7 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
         });
         
         this.display.translationDepth.addListener((observable, old_value, new_value) -> {
-             scene.orientation.translateDistance(scene.getCamera(), new_value.floatValue());
+             scene.orientation.translateDistance(scene.getCamera(), new_value.floatValue() * scene.getWorldBound().getExtents().length() * 0.1f);
              trigger();
         });
         
@@ -148,17 +149,29 @@ public class ShadingRenderer extends KernelThread implements  Renderer<DynamicDi
         Intersection isect = new Intersection();
         boolean hit = scene.intersect(ray, isect);
                     
-        Color col = gradient(Math.min(100, isect.data)/100.f);
-        /*
-        if(hit)
-        {
-            float coeff = Math.abs(ray.d.dot(isect.n));            
-            col = Color.WHITE.mul(coeff);
-        }
+        Color col;
+        
+        if(heatmap)
+            col = gradient(Math.min(100, isect.data)/100.f);
+        
         else
-            col = Color.BLACK;
-        */
+        {
+            if(hit)
+            {
+                float coeff = Math.abs(ray.d.dot(isect.n));            
+                col = Color.WHITE.mul(coeff);
+            }
+            else
+                col = Color.BLACK;
+        }
+        
         return col;
+    }
+    
+    public void setHeatmap(boolean heatmap)
+    {
+        this.heatmap = heatmap;
+        trigger();
     }
 
     @Override

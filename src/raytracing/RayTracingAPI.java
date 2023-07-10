@@ -36,5 +36,10 @@ public final class RayTracingAPI extends API<DynamicDisplay, ShadingRenderer>{
     public void setRenderer(ShadingRenderer renderer) {
         this.renderer = renderer;
     }
+
+    @Override
+    public ShadingRenderer getRenderer() {
+        return this.renderer;
+    }
     
 }

@@ -51,8 +51,13 @@ public class RayTracingFXMLController implements Initializable {
         
         api.setPrimitive(new Box());
         api.setRenderer(new ShadingRenderer());
-        api.render(display);
+        api.render(display); 
     }    
+    
+    public RayTracingAPI getAPI()
+    {
+        return api;
+    }
     
     
     public void close(ActionEvent e)
@@ -99,5 +104,7 @@ public class RayTracingFXMLController implements Initializable {
         
         return file;
     }
+    
+    
     
 }
