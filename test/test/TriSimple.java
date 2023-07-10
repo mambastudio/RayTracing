@@ -23,17 +23,17 @@ public class TriSimple extends TriangleShape<Point3f, Vector3f, Ray>  {
 
     @Override
     public Vector3f e1() {
-        return Point3f.sub(p1, p2);
+        return Point3f.sub(pp1, pp2);
     }
 
     @Override
     public Vector3f e2() {
-        return Point3f.sub(p3, p1);
+        return Point3f.sub(pp3, pp1);
     }
     
     public Point3f v0()
     {
-        return p1;
+        return pp1;
     }
     
     public float nx()

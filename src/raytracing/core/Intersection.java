@@ -19,6 +19,10 @@ public class Intersection implements AbstractIntersection{
     public Vector3f n = new Vector3f();
     public float u, v;
     
+    public int data = 0;
+    
     public Primitive primitive = null;    
     public int id;    
+    
+    public boolean hasHit(){return primitive != null;}
 }

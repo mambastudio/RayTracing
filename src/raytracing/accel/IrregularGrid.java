@@ -9,22 +9,34 @@ import coordinate.generic.raytrace.AbstractAccelerator;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Ray;
-import raytracing.generic.Primitive;
+import raytracing.core.grid.base.Grid;
+import raytracing.core.grid.base.Hagrid;
+import raytracing.core.grid.base.Traverse;
+import raytracing.core.grid.construction.HagridConstruction;
+import raytracing.primitive.TriangleMesh;
 
 /**
  *
  * @author user
  */
-public class IrregularGrid implements AbstractAccelerator<Ray, Intersection, Primitive, BoundingBox> {
-
+public class IrregularGrid implements AbstractAccelerator<Ray, Intersection, TriangleMesh, BoundingBox> {
+    Grid grid = null;
+    TriangleMesh mesh = null;
+    
     @Override
-    public void build(Primitive primitives) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void build(TriangleMesh mesh) {
+        this.mesh = mesh;
+        
+        Hagrid hagrid = new Hagrid();
+        HagridConstruction construction = new HagridConstruction(hagrid);
+        construction.initialiseGrid(mesh);
+        grid = hagrid.grid();
     }
 
     @Override
     public boolean intersect(Ray ray, Intersection isect) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Traverse traverse = new Traverse(grid);
+        return traverse.traverse(ray, isect, mesh);
     }
 
     @Override
@@ -39,7 +51,7 @@ public class IrregularGrid implements AbstractAccelerator<Ray, Intersection, Pri
 
     @Override
     public BoundingBox getBound() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return grid.bbox;
     }
     
 }

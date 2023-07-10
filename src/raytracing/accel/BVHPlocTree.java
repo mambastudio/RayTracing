@@ -142,7 +142,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
             {
                 if(neighbourIndex < 0 || neighbourIndex>= end)
                     continue;
-                BoundingBox neighbourBox = input[neighbourIndex].bounds.clone();
+                BoundingBox neighbourBox = input[neighbourIndex].bounds.copy();
                 neighbourBox.include(box);
                 float distance = neighbourBox.getArea();
                                 
@@ -160,7 +160,7 @@ public class BVHPlocTree implements AbstractAccelerator<Ray, Intersection, Primi
             {
                 if(neighbourIndex < 0 || neighbourIndex >= end)
                     continue;
-                BoundingBox neighbourBox = input[neighbourIndex].bounds.clone();
+                BoundingBox neighbourBox = input[neighbourIndex].bounds.copy();
                 neighbourBox.include(box);
                 float distance = neighbourBox.getArea();
                 

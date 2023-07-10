@@ -35,7 +35,7 @@ public class Ray implements AbstractRay<Point3f, Vector3f>
     
     public final void init()
     {        
-        inv_d = new Vector3f(1f/d.x, 1f/d.y, 1f/d.z);
+        inv_d = new Vector3f(safe_rcp(d.x), safe_rcp(d.y), safe_rcp(d.z));
         sign = new int[3];
         sign[0] = inv_d.x < 0 ? 1 : 0;
         sign[1] = inv_d.y < 0 ? 1 : 0;
@@ -48,6 +48,7 @@ public class Ray implements AbstractRay<Point3f, Vector3f>
         return dirIsNeg;
     }
     
+    @Override
     public final boolean isInside(float t) 
     {
         return (tMin < t) && (t < tMax);
@@ -133,6 +134,10 @@ public class Ray implements AbstractRay<Point3f, Vector3f>
     @Override
     public Vector3f getInverseDirection() {
         return inv_d.copy();
+    }
+    
+    private float safe_rcp(float x) {
+        return x != 0 ? 1.0f / x : Math.copySign(Float.intBitsToFloat(0x7f800000), x);
     }
 
     @Override

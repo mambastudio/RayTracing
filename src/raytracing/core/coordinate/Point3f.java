@@ -20,6 +20,11 @@ public class Point3f implements SCoord<Point3f, Vector3f> {
         
     }
     
+    public Point3f(Point3i p)
+    {
+        this(p.x, p.y, p.z);
+    }
+    
     public Point3f(float x, float y, float z)
     {
         this.x = x; this.y = y; this.z = z;
@@ -38,6 +43,7 @@ public class Point3f implements SCoord<Point3f, Vector3f> {
         dest.z = p1.z - p2.z;
         return dest;
     }
+    
     
     public final Vector3f asVector3f()
     {

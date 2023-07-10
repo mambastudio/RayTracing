@@ -76,4 +76,11 @@ public class Point2f implements AbstractCoordinateFloat{
     public int getByteSize() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    @Override
+    public String toString()
+    {
+        float[] array = getArray();
+        return String.format("(%3.2f, %3.2f)", array[0], array[1]);
+    }
 }

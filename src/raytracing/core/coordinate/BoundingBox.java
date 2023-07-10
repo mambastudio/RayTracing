@@ -6,6 +6,7 @@
 package raytracing.core.coordinate;
 
 import coordinate.generic.AbstractBound;
+import coordinate.shapes.AlignedBBoxShape;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -13,39 +14,45 @@ import static java.lang.Math.min;
  *
  * @author user
  */
-public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, BoundingBox>{
-    public Point3f minimum;
-    public Point3f maximum;
+public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, BoundingBox>{
     
     public BoundingBox() 
     {
-        minimum = new Point3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
-        maximum = new Point3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        super(
+            new Point3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+            new Point3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY)
+        );
     }
     
     public BoundingBox(Point3f p) 
     {
-        minimum = new Point3f(p);
-        maximum = new Point3f(p);
+        super(
+            new Point3f(p),
+            new Point3f(p)
+        );
     }
     
     public BoundingBox(Point3f p1, Point3f p2) 
     {
-        minimum = new Point3f(//
-                min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z));
-        maximum = new Point3f(//
-                max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z));
+        super(
+            new Point3f(//
+                min(p1.x, p2.x), min(p1.y, p2.y), min(p1.z, p2.z)),
+            new Point3f(//
+                max(p1.x, p2.x), max(p1.y, p2.y), max(p1.z, p2.z))
+        );
     }
     
     public BoundingBox(float x1, float y1, float z1, float x2, float y2, float z2) {
-        minimum = new Point3f(//
-                min(x1, x2), min(y1, y2), min(z1, z2));
-        maximum = new Point3f(//
-                max(x1, x2), max(y1, y2), max(z1, z2));
+        super(
+            new Point3f(//
+                min(x1, x2), min(y1, y2), min(z1, z2)),
+            new Point3f(//
+                max(x1, x2), max(y1, y2), max(z1, z2))
+        );
     }
     
     @Override
-    public void include(Point3f p) {
+    public BoundingBox include(Point3f p) {
         if (p != null) {
             if (p.x < minimum.x)
                 minimum.x = p.x;
@@ -60,6 +67,7 @@ public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, Boundi
             if (p.z > maximum.z)
                 maximum.z = p.z;
         }
+        return this;
     }
     
     @Override
@@ -69,6 +77,16 @@ public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, Boundi
         dest.y = 0.5f * (minimum.y + maximum.y);
         dest.z = 0.5f * (minimum.z + maximum.z);
         return dest;
+    }
+    
+    public final void enlargeUlps() {
+        final float eps = 0.001f;
+        minimum.x -= Math.max(eps, Math.ulp(minimum.x));
+        minimum.y -= Math.max(eps, Math.ulp(minimum.y));
+        minimum.z -= Math.max(eps, Math.ulp(minimum.z));
+        maximum.x += Math.max(eps, Math.ulp(maximum.x));
+        maximum.y += Math.max(eps, Math.ulp(maximum.y));
+        maximum.z += Math.max(eps, Math.ulp(maximum.z));
     }
 
     @Override
@@ -176,8 +194,7 @@ public class BoundingBox implements AbstractBound<Point3f, Vector3f, Ray, Boundi
         return ((b != null) && (minimum.x <= b.maximum.x) && (maximum.x >= b.minimum.x) && (minimum.y <= b.maximum.y) && (maximum.y >= b.minimum.y) && (minimum.z <= b.maximum.z) && (maximum.z >= b.minimum.z));
     }
     
-    @Override
-    public BoundingBox clone() 
+    public BoundingBox copy() 
     {        
         return new BoundingBox(minimum, maximum);
     }

@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import raytracing.accel.BVHAfra;
 import raytracing.accel.HLBVH;
+import raytracing.core.coordinate.Point3i;
+import raytracing.core.coordinate.Vector3f;
 import raytracing.primitive.TriangleMesh;
 
 /**
@@ -23,7 +25,11 @@ public class Test {
         Arrays.parallelPrefix(prefix, (x, y) -> x + y);
         
         System.out.println(Arrays.toString(prefix));
-       
+        
+        Vector3f b = new Vector3f(0, 3, 0);
+        Vector3f c = new Vector3f(2, 2, 2);
+        
+        System.out.println(Vector3f.min(b, c));
     }
             
 }
