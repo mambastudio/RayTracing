@@ -218,7 +218,7 @@ public class Build extends GridAbstract {
                         new Point3f((i & 1) != 0 ? cell_max.x : middle.x,
                                     (i & 2) != 0 ? cell_max.y : middle.y,
                                     (i & 4) != 0 ? cell_max.z : middle.z));
-                if (!prim.getBound().intersects(bbox)) mask &= ~(1 << i);
+                if (!prim.triangleBoxIntersection(bbox)) mask &= ~(1 << i);
 
                 // Skip non-intersected children
                 int skip = __ffs(mask >> (i + 1));
@@ -449,7 +449,7 @@ public class Build extends GridAbstract {
                     hagrid.grid_bbox.minimum.add(new Vector3f(cell.min).mul(hagrid.cell_size)),
                     hagrid.grid_bbox.minimum.add(new Vector3f(cell.max).mul(hagrid.cell_size)));    
             
-            boolean intersect = prim.getBound().intersects(bbox);//prim.planeBoxIntersection(bbox);
+            boolean intersect = prim.triangleBoxIntersection(bbox);//prim.planeBoxIntersection(bbox);
             if (!intersect) {
                 cell_ids.set(id, -1);
                 ref_ids.set(id, -1);                
@@ -622,7 +622,7 @@ public class Build extends GridAbstract {
         update_entries(start_cell, entries, num_cells);   
         
         // Partition the set of cells into the sets of those which will be split and those which won't
-        System.out.println("refs " +num_refs * 2);
+        
         IntegerList tmp_ref_ids  = new IntegerList(new int[num_refs * 2]);
         IntegerList tmp_cell_ids = tmp_ref_ids.getSubListFrom(num_refs); 
         int num_sel_refs  = ref_ids.partition_stable(num_refs, tmp_ref_ids, kept_flags); 
