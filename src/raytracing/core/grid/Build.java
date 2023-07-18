@@ -622,6 +622,7 @@ public class Build extends GridAbstract {
         update_entries(start_cell, entries, num_cells);   
         
         // Partition the set of cells into the sets of those which will be split and those which won't
+        
         IntegerList tmp_ref_ids  = new IntegerList(new int[num_refs * 2]);
         IntegerList tmp_cell_ids = tmp_ref_ids.getSubListFrom(num_refs); 
         int num_sel_refs  = ref_ids.partition_stable(num_refs, tmp_ref_ids, kept_flags); 
@@ -840,5 +841,7 @@ public class Build extends GridAbstract {
         System.out.println("iteration " +iter); 
         
         concat_levels(levels, hagrid.grid());
+                   
+        System.out.println(hagrid.grid().ref_ids.max());
     }
 }
