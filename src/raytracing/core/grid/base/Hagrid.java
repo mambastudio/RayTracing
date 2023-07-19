@@ -14,8 +14,8 @@ import raytracing.core.coordinate.Vector3f;
  * @author user
  */
 public class Hagrid {
-    public float top_density = 1.15f;
-    public float snd_density = 6.0f;
+    public float top_density = 0.15f;
+    public float snd_density = 1.0f;
     public float alpha = 0.995f;
     public int exp_iters = 3;
     
