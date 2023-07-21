@@ -5,23 +5,22 @@
  */
 package raytracing.core.grid2.base;
 
-import coordinate.list.ObjectList;
 import coordinate.memory.NativeInteger;
+import coordinate.memory.NativeObject;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Point3i;
 import raytracing.core.coordinate.Vector3f;
 import raytracing.core.grid.base.Cell;
-import raytracing.core.grid.base.Entry;
 
 /**
  *
  * @author user
  */
 public class Grid2 {
-    public Entry[] entries;         ///< Voxel map, stored as a contiguous array
-    public NativeInteger   ref_ids;   ///< Array of primitive references
-    public ObjectList<Cell>  cells; ///< Cells of the structure (nullptr if compressed)
+    public NativeObject<Entry2> entries;         ///< Voxel map, stored as a contiguous array
+    public NativeInteger        ref_ids;   ///< Array of primitive references
+    public NativeObject<Cell2>  cells; ///< Cells of the structure (nullptr if compressed)
 
     //SmallCell* small_cells;       ///< Compressed cells (nullptr if not compressed)
 
