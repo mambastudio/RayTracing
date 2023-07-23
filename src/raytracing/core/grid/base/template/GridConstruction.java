@@ -3,23 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.construction;
+package raytracing.core.grid.base.template;
 
-import raytracing.core.grid.base.Hagrid;
 import raytracing.primitive.TriangleMesh;
 
 /**
  *
  * @author user
+ * @param <G>
+ * @param <H>
  */
-public abstract class GridConstruction {
+public abstract class GridConstruction<G extends GridMap, H extends HagridSetup<G>> {
     
-    Hagrid hagrid;
+    protected H hagrid;
     
-    protected GridConstruction(Hagrid hagrid)
+    protected GridConstruction(H hagrid)
     {
         this.hagrid = hagrid;
     }
+    
+    public abstract G initialiseGrid(TriangleMesh tris);
     
     /// Builds an initial irregular grid.
     /// The building process starts by creating a uniform grid of density 'top_density',

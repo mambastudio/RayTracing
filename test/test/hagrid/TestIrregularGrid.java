@@ -7,7 +7,7 @@ package test.hagrid;
 
 import coordinate.parser.obj.OBJParser;
 import raytracing.core.grid.base.Hagrid;
-import raytracing.core.grid.construction.HagridConstruction;
+import raytracing.core.grid.HagridConstruction;
 import raytracing.primitive.TriangleMesh;
 
 /**

@@ -5,6 +5,7 @@
  */
 package raytracing.core.grid;
 
+import raytracing.core.grid.base.template.GridAbstract;
 import coordinate.list.IntegerList;
 import coordinate.list.ObjectList;
 import static java.lang.Math.max;

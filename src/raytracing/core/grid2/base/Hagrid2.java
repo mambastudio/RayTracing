@@ -8,14 +8,15 @@ package raytracing.core.grid2.base;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point3i;
 import raytracing.core.coordinate.Vector3f;
+import raytracing.core.grid.base.template.HagridSetup;
 
 /**
  *
  * @author user
  */
-public class Hagrid2 {
-    public float top_density = 8.15f;
-    public float snd_density = 8.0f;
+public class Hagrid2 implements HagridSetup<Grid2> {
+    public float top_density = 0.15f;
+    public float snd_density = 3.0f;
     public float alpha = 0.995f;
     public int exp_iters = 3;
     
@@ -37,6 +38,7 @@ public class Hagrid2 {
         irregular_grid = new Grid2();
     }
     
+    @Override
     public Grid2 grid()
     {
         return irregular_grid;

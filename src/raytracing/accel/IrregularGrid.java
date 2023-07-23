@@ -11,8 +11,8 @@ import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Ray;
 import raytracing.core.grid.base.Grid;
 import raytracing.core.grid.base.Hagrid;
-import raytracing.core.grid.base.Traverse;
-import raytracing.core.grid.construction.HagridConstruction;
+import raytracing.core.grid.Traverse;
+import raytracing.core.grid.HagridConstruction;
 import raytracing.primitive.TriangleMesh;
 
 /**

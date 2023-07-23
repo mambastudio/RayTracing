@@ -5,7 +5,7 @@
  */
 package raytracing.core.coordinate;
 
-import coordinate.generic.AbstractBound;
+import coordinate.memory.NativeObject.Element;
 import coordinate.shapes.AlignedBBoxShape;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -14,7 +14,7 @@ import static java.lang.Math.min;
  *
  * @author user
  */
-public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, BoundingBox>{
+public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, BoundingBox> implements Element<BoundingBox>{
     
     public BoundingBox() 
     {
@@ -194,8 +194,29 @@ public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, Boundi
         return ((b != null) && (minimum.x <= b.maximum.x) && (maximum.x >= b.minimum.x) && (minimum.y <= b.maximum.y) && (maximum.y >= b.minimum.y) && (minimum.z <= b.maximum.z) && (maximum.z >= b.minimum.z));
     }
     
+    @Override
     public BoundingBox copy() 
     {        
         return new BoundingBox(minimum, maximum);
+    }
+
+    @Override
+    public int sizeOf() {
+        return 24;
+    }
+
+    @Override
+    public byte[] getBytes() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void putBytes(byte[] bytes) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public BoundingBox newInstance() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

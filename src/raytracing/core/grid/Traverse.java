@@ -1,14 +1,14 @@
+package raytracing.core.grid;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.base;
 
-import coordinate.utility.Utility;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.util.Arrays;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Point2f;
@@ -16,7 +16,9 @@ import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Point3i;
 import raytracing.core.coordinate.Ray;
 import raytracing.core.coordinate.Vector3f;
-import raytracing.core.grid.GridAbstract;
+import raytracing.core.grid.base.Cell;
+import raytracing.core.grid.base.Grid;
+import raytracing.core.grid.base.template.GridAbstract;
 import raytracing.primitive.TriangleMesh;
 
 /**

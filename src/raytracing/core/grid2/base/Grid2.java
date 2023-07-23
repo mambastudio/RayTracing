@@ -12,12 +12,13 @@ import raytracing.core.coordinate.Point3f;
 import raytracing.core.coordinate.Point3i;
 import raytracing.core.coordinate.Vector3f;
 import raytracing.core.grid.base.Cell;
+import raytracing.core.grid.base.template.GridMap;
 
 /**
  *
  * @author user
  */
-public class Grid2 {
+public class Grid2 implements GridMap{
     public NativeObject<Entry2> entries;         ///< Voxel map, stored as a contiguous array
     public NativeInteger        ref_ids;   ///< Array of primitive references
     public NativeObject<Cell2>  cells; ///< Cells of the structure (nullptr if compressed)

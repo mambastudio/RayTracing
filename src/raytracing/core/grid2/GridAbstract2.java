@@ -3,20 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid;
+package raytracing.core.grid2;
 
-import coordinate.list.IntegerList;
+import coordinate.memory.NativeInteger;
+import coordinate.memory.NativeObject;
 import java.util.function.BiConsumer;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.Point3i;
-import raytracing.core.grid.base.Cell;
-import raytracing.core.grid.base.Entry;
+import raytracing.core.grid2.base.Cell2;
+import raytracing.core.grid2.base.Entry2;
 
 /**
  *
  * @author user
  */
-public abstract class GridAbstract {
+public class GridAbstract2 {
     public int __ffs(int value)            
     {      
         //https://en.wikipedia.org/wiki/Find_first_set
@@ -38,13 +39,13 @@ public abstract class GridAbstract {
     }    
     
     /// Returns a voxel map entry with the given dimension and starting index
-    public Entry make_entry(int log_dim, int begin) {
-        Entry e = new Entry(log_dim, begin);
+    public Entry2 make_entry(int log_dim, int begin) {
+        Entry2 e = new Entry2(log_dim, begin);
         return e;
     }
     
-    public int lookup_entry(Entry[] entries, int shift, Point3i dims, Point3i voxel) {
-        Entry entry = entries[(voxel.x >> shift) + dims.x * ((voxel.y >> shift) + dims.y * (voxel.z >> shift))];
+    public int lookup_entry(NativeObject<Entry2> entries, int shift, Point3i dims, Point3i voxel) {
+        Entry2 entry = entries.get((voxel.x >> shift) + dims.x * ((voxel.y >> shift) + dims.y * (voxel.z >> shift)));
         int log_dim = entry.log_dim, d = log_dim;
         while (log_dim != 0) {
             int begin = entry.begin;
@@ -52,14 +53,14 @@ public abstract class GridAbstract {
 
             //auto k = (voxel >> int(shift - d)) & mask;
             Point3i k = voxel.rightShift(shift -d).and(mask);
-            entry = entries[begin + k.x + ((k.y + (k.z << log_dim)) << log_dim)];
+            entry = entries.get(begin + k.x + ((k.y + (k.z << log_dim)) << log_dim));
             log_dim = entry.log_dim;
             d += log_dim;
         }
         return entry.begin;
     }
     
-    public int foreach_ref(Cell cell, Intersection isect, IntegerList ref_ids, BiConsumer<Integer, Intersection> f) {
+    public int foreach_ref(Cell2 cell, Intersection isect, NativeInteger ref_ids, BiConsumer<Integer, Intersection> f) {
         int cur = cell.begin, ref = cur < cell.end ? ref_ids.get(cur++) : -1;
         while (ref >= 0) {
             // Preload the next reference

@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.core.grid.construction;
+package raytracing.core.grid;
 
-import raytracing.core.grid.Build;
-import raytracing.core.grid.Merge;
+import raytracing.core.grid.base.template.GridConstruction;
 import raytracing.core.grid.base.Grid;
 import raytracing.core.grid.base.Hagrid;
 import raytracing.primitive.TriangleMesh;
@@ -15,13 +14,14 @@ import raytracing.primitive.TriangleMesh;
  *
  * @author user
  */
-public class HagridConstruction extends GridConstruction{
+public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
     
     public HagridConstruction(Hagrid hagrid)
     {
         super(hagrid);
     }
     
+    @Override
     public Grid initialiseGrid(TriangleMesh tris)
     {       
         build_grid(tris);
