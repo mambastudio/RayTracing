@@ -31,7 +31,7 @@ public class HagridConstruction2 extends GridConstruction<Grid2, Hagrid2>{
     @Override
     protected void build_grid(TriangleMesh tris) {
         Build2 build = new Build2(hagrid);
-        build.build_grid(tris);
+        //build.build_grid(tris);
         System.out.println("finished building");
     }
 
