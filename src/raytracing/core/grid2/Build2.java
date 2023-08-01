@@ -19,6 +19,7 @@ import raytracing.core.coordinate.Vector3f;
 import raytracing.core.grid.base.Range;
 import raytracing.core.grid2.base.Cell2;
 import raytracing.core.grid2.base.Entry2;
+import raytracing.core.grid2.base.Grid2;
 import raytracing.core.grid2.base.Hagrid2;
 import raytracing.core.grid2.base.Level2;
 import raytracing.primitive.Triangle;
@@ -258,13 +259,13 @@ public class Build2 extends GridAbstract2{
     
     /// Mark the cells that are used as 'kept'
     public void mark_kept_cells(
-                                Entry2[] entries,
+                                NativeObject<Entry2> entries,
                                 NativeInteger kept_cells,
                                 int num_cells) {        
         for(int id = 0; id<num_cells; id++)
         {
             if (id >= num_cells) return;
-            kept_cells.set(id, (entries[id].log_dim == 0) ? 1 : 0);
+            kept_cells.set(id, (entries.get(id).log_dim == 0) ? 1 : 0);
         }
     }
     
@@ -546,7 +547,7 @@ public class Build2 extends GridAbstract2{
         
         count_new_refs(bboxes, new_ref_counts, prims.getSize());  //new references generated based on how many cells each ref overlaps      
         
-        new_ref_counts.copyTo(start_emit); //copy to and shift to the right
+        new_ref_counts.copyToMem(start_emit); //copy to and shift to the right
         int num_new_refs = ParallelNative.exclusiveScan(start_emit);
         //int num_new_refs = start_emit.prefixSum(0, prims.getSize() + 1); 
                 
@@ -588,7 +589,171 @@ public class Build2 extends GridAbstract2{
         level.entries   = new_entries;
         level.num_cells = num_top_cells;  
                         
-        levels.add(level);       
+        levels.add(level);               
+    }
+    
+    public boolean build_iter(
+                TriangleMesh prims,
+                Point3i dims, NativeInteger log_dims,
+                ArrayList<Level2> levels,
+                int iter)
+    {
+        NativeInteger cell_ids              = levels.get(levels.size()-1).cell_ids;
+        NativeInteger ref_ids               = levels.get(levels.size()-1).ref_ids;
+        NativeObject<Cell2> cells           = levels.get(levels.size()-1).cells;
+        NativeObject<Entry2> entries        = levels.get(levels.size()-1).entries;
         
+        int num_top_cells       = dims.x * dims.y * dims.z;
+        int num_refs            = levels.get(levels.size()-1).num_refs;
+        int num_cells           = levels.get(levels.size()-1).num_cells;
+        
+        int cur_level  = levels.size();
+        
+        NativeInteger kept_flags = new NativeInteger(num_refs + 1);
+        
+        // Find out which cell will be split based on whether it is empty or not and the max depth
+        compute_dims(cell_ids, cells, log_dims, entries, num_refs); 
+        update_log_dims(log_dims, num_top_cells);        
+        mark_kept_refs(cell_ids, entries, kept_flags, num_refs);
+        
+        // Store the sub-cells starting index in the entries
+        NativeInteger start_cell = new NativeInteger(num_cells + 1);        
+        int num_new_cells = ParallelNative.exclusiveScan(ParallelNative.transform(
+                entries, 
+                e-> e.log_dim == 0 ? 0 : 8), 
+                num_cells + 1, 
+                start_cell);
+        
+        update_entries(start_cell, entries, num_cells);   
+        
+        // Partition the set of cells into the sets of those which will be split and those which won't        
+        NativeInteger tmp_ref_ids  = new NativeInteger(num_refs * 2);
+        NativeInteger tmp_cell_ids = tmp_ref_ids.offsetMemory(num_refs);
+        int num_sel_refs  = ParallelNative.partition(ref_ids, tmp_ref_ids, num_refs, kept_flags);
+        int num_sel_cells = ParallelNative.partition(cell_ids, tmp_cell_ids, num_refs, kept_flags);
+        
+        if(num_sel_refs != num_sel_cells)
+            throw new UnsupportedOperationException("num_sel_refs is not equal to num_sel_cells");
+        
+        //Swap
+        tmp_ref_ids.swap(ref_ids);
+        tmp_cell_ids.swap(cell_ids); 
+         
+        int num_kept = num_sel_refs;
+        levels.get(levels.size()-1).ref_ids  = ref_ids;
+        levels.get(levels.size()-1).cell_ids = cell_ids;
+        levels.get(levels.size()-1).num_kept = num_kept;
+        
+        if (num_new_cells == 0) {
+            // Exit here because no new reference will be emitted            
+            return false;
+        }
+        
+        int num_split = num_refs - num_kept;
+                
+        // Split the references
+        NativeInteger split_masks = new NativeInteger(num_split + 1);
+        NativeInteger start_split = new NativeInteger(num_split + 1);
+        
+        /// Compute a mask for each reference which determines which sub-cell is intersected
+        compute_split_masks(
+                cell_ids.offsetMemory(num_kept), 
+                ref_ids.offsetMemory(num_kept), 
+                prims, cells, 
+                split_masks, 
+                num_split);
+        
+        // Store the sub-cells starting index in the entries              
+        int num_new_refs = ParallelNative.exclusiveScan(ParallelNative.transform(split_masks, mask-> __popc(mask)),
+                num_split+1, start_split);
+      
+        if(!(num_new_refs <= 8 * num_split))        
+            throw new UnsupportedOperationException("num_new_refs: " +num_new_refs+ " should be <= " +8 * num_split);
+                
+        NativeInteger new_ref_ids = new NativeInteger(num_new_refs * 2);
+        NativeInteger new_cell_ids = new_ref_ids.offsetMemory(num_new_refs);
+                
+        split_refs(
+                cell_ids.offsetMemory(num_kept), 
+                ref_ids.offsetMemory(num_kept), 
+                entries, 
+                split_masks, 
+                start_split, 
+                new_cell_ids, 
+                new_ref_ids, 
+                num_split);
+        
+        
+        // Emission of the new cells
+        NativeObject<Cell2> new_cells   = new NativeObject(Cell2.class, num_new_cells + 0);
+        NativeObject<Entry2> new_entries = new NativeObject(Entry2.class, num_new_cells + 1);
+        emit_new_cells(entries, cells, new_cells, num_cells);
+                
+        new_entries.fill(new Entry2());
+                                
+        Level2 level = new Level2();
+        level.ref_ids   = new_ref_ids;         
+        level.cell_ids  = new_cell_ids;        
+        level.num_refs  = num_new_refs;        
+        level.num_kept  = num_new_refs;        
+        level.cells     = new_cells;           
+        level.entries   = new_entries;         
+        level.num_cells = num_new_cells;     
+        
+        levels.add(level);
+                
+        return true;        
+    }
+    
+    public void concat_levels(ArrayList<Level2> levels, Grid2 grid) {
+        int num_levels = levels.size();
+        
+        // Start with references
+        int total_refs = 0;
+        int total_cells = 0;
+        for (Level2 level : levels) {
+            total_refs  += level.num_kept;
+            total_cells += level.num_cells;
+        }
+        
+        // Copy primitive references as-is
+        NativeInteger ref_ids  = new NativeInteger(total_refs);
+        NativeInteger cell_ids = new NativeInteger(total_refs);
+        for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_kept, i++)            
+            levels.get(i).ref_ids.copyToMem(ref_ids.offsetMemory(off), levels.get(i).num_kept);
+        
+        // Copy the cell indices with an offset       
+        for (int i = 0, off = 0, cell_off = 0; i < num_levels; off += levels.get(i).num_kept, cell_off += levels.get(i).num_cells, i++) {
+            int num_kept = levels.get(i).num_kept;
+            if (num_kept != 0) {
+                copy_refs(levels.get(i).cell_ids, cell_ids.offsetMemory(off), cell_off, num_kept);
+                //DEBUG_SYNC();
+            }
+            levels.get(i).ref_ids = null;
+        }
+        
+        // Mark the cells at the leaves of the structure as kept
+        NativeInteger kept_cells = new NativeInteger(total_cells + 1);
+        
+        for (int i = 0, cell_off = 0; i < num_levels; cell_off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            mark_kept_cells(levels.get(i).entries, kept_cells.offsetMemory(cell_off), num_cells);
+            //DEBUG_SYNC();
+        }
+        
+        // Compute the insertion position of each cell
+        NativeInteger start_cell = new NativeInteger(total_cells + 1);  
+        kept_cells.copyToMem(start_cell);
+        int new_total_cells = ParallelNative.exclusiveScan(start_cell);
+                
+        // Allocate new cells, and copy only the cells that are kept
+        NativeObject<Cell2> cells = new NativeObject(Cell2.class, new_total_cells);
+        for (int i = 0, cell_off = 0; i < num_levels; cell_off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            copy_cells(levels.get(i).cells, start_cell, cells, cell_off, num_cells);
+            //DEBUG_SYNC();
+            //mem.free(levels[i].cells);
+            levels.get(i).cells = null;
+        }
     }
 }

@@ -16,7 +16,7 @@ import raytracing.core.grid.base.template.HagridSetup;
  */
 public class Hagrid implements HagridSetup<Grid> {
     public float top_density = 0.15f;
-    public float snd_density = 3.0f;
+    public float snd_density = 1.0f;
     public float alpha = 0.995f;
     public int exp_iters = 3;
     
