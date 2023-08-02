@@ -753,7 +753,52 @@ public class Build2 extends GridAbstract2{
             copy_cells(levels.get(i).cells, start_cell, cells, cell_off, num_cells);
             //DEBUG_SYNC();
             //mem.free(levels[i].cells);
-            levels.get(i).cells = null;
+            levels.get(i).cells.dispose();
         }
+        
+        Entry[] entries = new Entry[total_cells];
+        for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_cells, i++) {
+            int num_cells = levels.get(i).num_cells;
+            int next_level_off = off + num_cells;
+            //copy_entries(levels.get(i).entries, start_cell, entries + off, off, next_level_off, num_cells);
+        copy_entries(levels.get(i).entries, start_cell, entries, off, next_level_off, num_cells);
+            //DEBUG_SYNC();
+            //mem.free(levels[i].entries);
+            levels.get(i).entries = null;
+        }
+        
+        // Remap the cell indices in the references (which currently map to incorrect cells)
+        remap_refs(cell_ids, start_cell, total_refs);
+        //DEBUG_SYNC();
+        
+        // Sort the references by cell (re-use old slots whenever possible)
+        NativeInteger tmp_ref_ids  = new NativeInteger(total_refs);
+        NativeInteger tmp_cell_ids = new NativeInteger(total_refs);
+        NativeInteger new_ref_ids = tmp_ref_ids;
+        NativeInteger new_cell_ids = tmp_cell_ids;        
+        ParallelNative.sort_pair(cell_ids, ref_ids, new_cell_ids, new_ref_ids);
+        
+        if (!ref_ids.equals(new_ref_ids))  //ref_ids and cell_ids don't share same array hence one can swap both
+            ref_ids.swap(tmp_ref_ids);           
+        if (!cell_ids.equals(new_cell_ids)) 
+            cell_ids.swap(tmp_cell_ids);  
+        
+        // Compute the ranges of references for each cell
+        compute_cell_ranges(cell_ids, cells, total_refs);
+        //DEBUG_SYNC();
+        
+        grid.entries = entries;
+        grid.ref_ids = ref_ids;
+        grid.cells   = new ObjectList(cells);
+        grid.shift   = levels.size() - 1;
+        grid.num_cells   = new_total_cells;
+        grid.num_entries = total_cells;
+        grid.num_refs    = total_refs;
+        
+        grid.offsets = new NativeInteger([levels.size()]);
+        for (int i = 0, off = 0; i < levels.size(); i++) {
+            off += levels.get(i).num_cells;
+            grid.offsets.set(i, off);
+        }        
     }
 }
