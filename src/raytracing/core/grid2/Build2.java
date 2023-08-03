@@ -289,9 +289,9 @@ public class Build2 extends GridAbstract2{
     }
     
     /// Copy the voxel map entries and remap kept cells to their correct indices
-    public void copy_entries(Entry2[] entries,
+    public void copy_entries(NativeObject<Entry2> entries,
                              NativeInteger start_cell,
-                             Entry2[] new_entries,
+                             NativeObject<Entry2> new_entries,
                              int cell_off,
                              int next_level_off,
                              int num_cells) {
@@ -299,7 +299,7 @@ public class Build2 extends GridAbstract2{
         {
             if (id >= num_cells) return;
 
-            Entry2 entry = entries[id];
+            Entry2 entry = entries.get(id);
             if (entry.log_dim == 0) {
                 // Points to a cell
                 entry.begin = start_cell.get(cell_off + entry.begin);
@@ -307,7 +307,7 @@ public class Build2 extends GridAbstract2{
                 // Points to another entry in the next level
                 entry.begin += next_level_off;
             }
-            new_entries[id + cell_off] = entry.copy();
+            new_entries.set(id + cell_off, entry.copy());
         }
     }
     
@@ -756,7 +756,7 @@ public class Build2 extends GridAbstract2{
             levels.get(i).cells.dispose();
         }
         
-        Entry[] entries = new Entry[total_cells];
+        NativeObject<Entry2> entries = new NativeObject(Entry2.class, total_cells);
         for (int i = 0, off = 0; i < num_levels; off += levels.get(i).num_cells, i++) {
             int num_cells = levels.get(i).num_cells;
             int next_level_off = off + num_cells;
@@ -776,7 +776,7 @@ public class Build2 extends GridAbstract2{
         NativeInteger tmp_cell_ids = new NativeInteger(total_refs);
         NativeInteger new_ref_ids = tmp_ref_ids;
         NativeInteger new_cell_ids = tmp_cell_ids;        
-        ParallelNative.sort_pair(cell_ids, ref_ids, new_cell_ids, new_ref_ids);
+        ParallelNative.sort_pair(cell_ids, ref_ids, new_cell_ids, new_ref_ids, total_refs, (a, b) -> a > b);
         
         if (!ref_ids.equals(new_ref_ids))  //ref_ids and cell_ids don't share same array hence one can swap both
             ref_ids.swap(tmp_ref_ids);           
@@ -789,13 +789,13 @@ public class Build2 extends GridAbstract2{
         
         grid.entries = entries;
         grid.ref_ids = ref_ids;
-        grid.cells   = new ObjectList(cells);
+        grid.cells   = cells;
         grid.shift   = levels.size() - 1;
         grid.num_cells   = new_total_cells;
         grid.num_entries = total_cells;
         grid.num_refs    = total_refs;
         
-        grid.offsets = new NativeInteger([levels.size()]);
+        grid.offsets = new NativeInteger(levels.size());
         for (int i = 0, off = 0; i < levels.size(); i++) {
             off += levels.get(i).num_cells;
             grid.offsets.set(i, off);
