@@ -4,6 +4,21 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/user/Documents/GitHub/RayTracing/src/raytracing/core/grid2/SerialIntArray.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/Build2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/base/Entry2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/base/Grid2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/base/Level2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/base/Cell2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Entry.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/HagridConstruction2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Cell.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Range.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Level.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Grid.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/GridAbstract2.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/base/Hagrid.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid/Build.java</file>
+            <file>file:/C:/Users/jmburu/Documents/GitHub/RayTracing/src/raytracing/core/grid2/base/Hagrid2.java</file>
         </group>
     </open-files>
 </project-private>
