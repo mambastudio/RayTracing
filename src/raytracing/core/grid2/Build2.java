@@ -7,7 +7,7 @@ package raytracing.core.grid2;
 
 import coordinate.memory.NativeInteger;
 import coordinate.memory.NativeObject;
-import coordinate.memory.functions.ParallelNative;
+import coordinate.memory.algorithms.ParallelNative;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
