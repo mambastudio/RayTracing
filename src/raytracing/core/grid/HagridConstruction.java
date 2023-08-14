@@ -8,6 +8,8 @@ package raytracing.core.grid;
 import raytracing.core.grid.base.template.GridConstruction;
 import raytracing.core.grid.base.Grid;
 import raytracing.core.grid.base.Hagrid;
+import raytracing.core.grid2.Build2;
+import raytracing.core.grid2.base.Hagrid2;
 import raytracing.primitive.TriangleMesh;
 
 /**
@@ -35,6 +37,8 @@ public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
     protected void build_grid(TriangleMesh tris) {
         Build build = new Build(hagrid);
         build.build_grid(tris);
+        Build2 b = new Build2(new Hagrid2());
+        b.build_grid(tris);
         System.out.println("finished building");
     }
 

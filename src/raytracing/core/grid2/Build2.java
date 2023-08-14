@@ -8,6 +8,8 @@ package raytracing.core.grid2;
 import coordinate.memory.NativeInteger;
 import coordinate.memory.NativeObject;
 import coordinate.memory.algorithms.ParallelNative;
+import coordinate.memory.algorithms.SerialNativeIntegerAlgorithm;
+import coordinate.memory.algorithms.SerialNativeObjectAlgorithm;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -55,7 +57,7 @@ public class Build2 extends GridAbstract2{
     /// Mark references that are kept so that they can be moved to the beginning of the array
     public void mark_kept_refs(
             NativeInteger cell_ids,
-            NativeObject<Entry2> entries,
+            NativeInteger entries,
             NativeInteger kept_flags,
             int num_refs) {
         for(int id = 0; id<num_refs; id++)
@@ -64,7 +66,7 @@ public class Build2 extends GridAbstract2{
 
             int cell_id = cell_ids.get(id);  
             
-            int value = ((cell_id >= 0) && (entries.get(cell_id).log_dim == 0)) ? 1 : 0;              
+            int value = ((cell_id >= 0) && (entries.get(cell_id, new Entry2()).log_dim == 0)) ? 1 : 0;              
             kept_flags.set(id, value);
         }             
     }
@@ -72,14 +74,14 @@ public class Build2 extends GridAbstract2{
     /// Update the entries for the one level before the current one
     public void update_entries(
             NativeInteger start_cell,
-            NativeObject<Entry2> entries,
+            NativeInteger entries,
             int num_cells) {
         for(int id = 0; id<num_cells; id++)
         {            
             if (id >= num_cells) return;
 
             int start = start_cell.get(id);
-            Entry2 entry = entries.get(id);
+            Entry2 entry = entries.get(id, new Entry2());
 
             // If the cell is subdivided, write the first sub-cell index into the current entry
             entry.begin = entry.log_dim != 0 ? start : id;
@@ -150,7 +152,7 @@ public class Build2 extends GridAbstract2{
             NativeInteger  cell_ids,
             NativeObject<Cell2> cells,
             NativeInteger log_dims,
-            NativeObject<Entry2> entries,
+            NativeInteger entries,
             int num_refs) {
         
         for(int id = 0; id<num_refs; id++)
@@ -259,13 +261,13 @@ public class Build2 extends GridAbstract2{
     
     /// Mark the cells that are used as 'kept'
     public void mark_kept_cells(
-                                NativeObject<Entry2> entries,
+                                NativeInteger entries,
                                 NativeInteger kept_cells,
                                 int num_cells) {        
         for(int id = 0; id<num_cells; id++)
         {
             if (id >= num_cells) return;
-            kept_cells.set(id, (entries.get(id).log_dim == 0) ? 1 : 0);
+            kept_cells.set(id, (entries.get(id, new Entry2()).log_dim == 0) ? 1 : 0);
         }
     }
     
@@ -289,7 +291,7 @@ public class Build2 extends GridAbstract2{
     }
     
     /// Copy the voxel map entries and remap kept cells to their correct indices
-    public void copy_entries(NativeObject<Entry2> entries,
+    public void copy_entries(NativeInteger entries,
                              NativeInteger start_cell,
                              NativeObject<Entry2> new_entries,
                              int cell_off,
@@ -299,7 +301,7 @@ public class Build2 extends GridAbstract2{
         {
             if (id >= num_cells) return;
 
-            Entry2 entry = entries.get(id);
+            Entry2 entry = entries.get(id, new Entry2());
             if (entry.log_dim == 0) {
                 // Points to a cell
                 entry.begin = start_cell.get(cell_off + entry.begin);
@@ -307,7 +309,7 @@ public class Build2 extends GridAbstract2{
                 // Points to another entry in the next level
                 entry.begin += next_level_off;
             }
-            new_entries.set(id + cell_off, entry.copy());
+            new_entries.set(id + cell_off, entry);
         }
     }
     
@@ -467,7 +469,7 @@ public class Build2 extends GridAbstract2{
     public void split_refs(
                     NativeInteger           cell_ids,
                     NativeInteger           ref_ids,
-                    NativeObject<Entry2>    entries,
+                    NativeInteger           entries,
                     NativeInteger           split_masks,
                     NativeInteger           start_split,
                     NativeInteger           new_cell_ids,
@@ -484,7 +486,7 @@ public class Build2 extends GridAbstract2{
                continue;
             
             int ref = ref_ids.get(id); 
-            int begin = entries.get(cell_id).begin;
+            int begin = entries.get(cell_id, new Entry2()).begin;
             int mask  = split_masks.get(id);
             int start = start_split.get(id);
             while (mask != 0) {
@@ -498,7 +500,7 @@ public class Build2 extends GridAbstract2{
     }
     
     /// Generate new cells based on the previous level
-    public void emit_new_cells(NativeObject<Entry2> entries,
+    public void emit_new_cells(NativeInteger entries,
                                NativeObject<Cell2> cells,
                                NativeObject<Cell2> new_cells,
                                int num_cells) {
@@ -506,7 +508,7 @@ public class Build2 extends GridAbstract2{
         {
             if (id >= num_cells) return;
 
-            Entry2 entry = entries.get(id);
+            Entry2 entry = entries.get(id, new Entry2());
             int log_dim = entry.log_dim;
             if (log_dim == 0) continue;            
 
@@ -537,19 +539,19 @@ public class Build2 extends GridAbstract2{
             NativeObject<BoundingBox> bboxes, BoundingBox grid_bb, Point3i dims, NativeInteger log_dims, 
             int[] grid_shift, ArrayList<Level2> levels) 
     {
+        SerialNativeIntegerAlgorithm par = new SerialNativeIntegerAlgorithm();
+        
         int num_top_cells = dims.x * dims.y * dims.z;
        
         NativeInteger start_emit        = new NativeInteger(prims.getSize() + 1);
         NativeInteger new_ref_counts    = new NativeInteger(prims.getSize() + 1);
-        NativeInteger refs_per_cell     = new NativeInteger(num_top_cells);
-        
+        NativeInteger refs_per_cell     = new NativeInteger(num_top_cells);        
         log_dims.resize(num_top_cells + 1);
         
         count_new_refs(bboxes, new_ref_counts, prims.getSize());  //new references generated based on how many cells each ref overlaps      
         
         new_ref_counts.copyToMem(start_emit); //copy to and shift to the right
-        int num_new_refs = ParallelNative.exclusiveScan(start_emit);
-        //int num_new_refs = start_emit.prefixSum(0, prims.getSize() + 1); 
+        int num_new_refs = par.exclusive_scan(new_ref_counts, prims.getSize() + 1, start_emit);  
                 
         // We are creating cells and their references of top level        
         NativeInteger new_ref_ids  = new NativeInteger(2 * num_new_refs); 
@@ -563,7 +565,7 @@ public class Build2 extends GridAbstract2{
         compute_log_dims(refs_per_cell, log_dims, snd_density, num_top_cells);
                 
         // Find the max sub-level resolution
-        grid_shift[0] = ParallelNative.reduce(log_dims);//log_dims.reduce(0, (a, b) -> Math.max(a, b));
+        grid_shift[0] = par.reduce(log_dims, num_top_cells, log_dims.offsetMemory(num_top_cells), (a, b)->max(a,b));       
         hagrid.grid().shift = grid_shift[0];
         
         this.hagrid.cell_size = grid_bb.extents().div(new Vector3f(dims.leftShift(grid_shift[0])));
@@ -571,10 +573,10 @@ public class Build2 extends GridAbstract2{
                 
         //Emission of the new cells
         NativeObject<Cell2> new_cells   = new NativeObject(Cell2.class, num_top_cells + 0);
-        NativeObject<Entry2> new_entries = new NativeObject(Entry2.class, num_top_cells + 1);
+        NativeInteger new_entries = new NativeInteger(num_top_cells + 1);
         
         emit_top_cells(new_cells, num_top_cells);
-        new_entries.fill(new Entry2());
+        new_entries.fill(0);
         
         // Filter out the references that do not intersect the cell they are in
         // Initially cell intersection was based on primitive bounding box, here we are more precise with primitive intersection with cell
@@ -588,6 +590,8 @@ public class Build2 extends GridAbstract2{
         level.cells     = new_cells;   
         level.entries   = new_entries;
         level.num_cells = num_top_cells;  
+        
+        System.out.println(new_ref_ids);
                         
         levels.add(level);               
     }
@@ -598,10 +602,12 @@ public class Build2 extends GridAbstract2{
                 ArrayList<Level2> levels,
                 int iter)
     {
+        SerialNativeIntegerAlgorithm par = new SerialNativeIntegerAlgorithm();
+        
         NativeInteger cell_ids              = levels.get(levels.size()-1).cell_ids;
         NativeInteger ref_ids               = levels.get(levels.size()-1).ref_ids;
         NativeObject<Cell2> cells           = levels.get(levels.size()-1).cells;
-        NativeObject<Entry2> entries        = levels.get(levels.size()-1).entries;
+        NativeInteger entries               = levels.get(levels.size()-1).entries;
         
         int num_top_cells       = dims.x * dims.y * dims.z;
         int num_refs            = levels.get(levels.size()-1).num_refs;
@@ -618,19 +624,17 @@ public class Build2 extends GridAbstract2{
         
         // Store the sub-cells starting index in the entries
         NativeInteger start_cell = new NativeInteger(num_cells + 1);        
-        int num_new_cells = ParallelNative.exclusiveScan(ParallelNative.transform(
-                entries, 
-                e-> e.log_dim == 0 ? 0 : 8), 
-                num_cells + 1, 
-                start_cell);
+        int num_new_cells = par.exclusive_scan(
+                par.transform(entries, e->new Entry2(e).log_dim == 0 ? 0 : 8), 
+                num_cells + 1, start_cell);               
         
         update_entries(start_cell, entries, num_cells);   
         
         // Partition the set of cells into the sets of those which will be split and those which won't        
         NativeInteger tmp_ref_ids  = new NativeInteger(num_refs * 2);
         NativeInteger tmp_cell_ids = tmp_ref_ids.offsetMemory(num_refs);
-        int num_sel_refs  = ParallelNative.partition(ref_ids, tmp_ref_ids, num_refs, kept_flags);
-        int num_sel_cells = ParallelNative.partition(cell_ids, tmp_cell_ids, num_refs, kept_flags);
+        int num_sel_refs  = par.partition(ref_ids,  tmp_ref_ids,  num_refs, kept_flags); 
+        int num_sel_cells = par.partition(cell_ids, tmp_cell_ids, num_refs, kept_flags);
         
         if(num_sel_refs != num_sel_cells)
             throw new UnsupportedOperationException("num_sel_refs is not equal to num_sel_cells");
@@ -664,7 +668,7 @@ public class Build2 extends GridAbstract2{
                 num_split);
         
         // Store the sub-cells starting index in the entries              
-        int num_new_refs = ParallelNative.exclusiveScan(ParallelNative.transform(split_masks, mask-> __popc(mask)),
+        int num_new_refs = par.exclusive_scan(par.transform(split_masks, mask->__popc(mask)), 
                 num_split+1, start_split);
       
         if(!(num_new_refs <= 8 * num_split))        
@@ -686,10 +690,10 @@ public class Build2 extends GridAbstract2{
         
         // Emission of the new cells
         NativeObject<Cell2> new_cells   = new NativeObject(Cell2.class, num_new_cells + 0);
-        NativeObject<Entry2> new_entries = new NativeObject(Entry2.class, num_new_cells + 1);
+        NativeInteger new_entries = new NativeInteger(num_new_cells + 1);
         emit_new_cells(entries, cells, new_cells, num_cells);
                 
-        new_entries.fill(new Entry2());
+        new_entries.fill(0);
                                 
         Level2 level = new Level2();
         level.ref_ids   = new_ref_ids;         
@@ -800,5 +804,40 @@ public class Build2 extends GridAbstract2{
             off += levels.get(i).num_cells;
             grid.offsets.set(i, off);
         }        
+    }
+    
+    public void build_grid(TriangleMesh prims)
+    {
+        SerialNativeObjectAlgorithm<BoundingBox> par = new SerialNativeObjectAlgorithm();
+        
+        // Allocate a bounding box for each primitive + one for the global bounding box       
+        NativeObject<BoundingBox> bboxes = new NativeObject(BoundingBox.class, prims.getSize() + 1);
+        
+        compute_bboxes(prims, bboxes, prims.getSize());         
+        BoundingBox grid_bb = par.reduce(bboxes, prims.getSize(), bboxes.offsetMemoryLast(), 
+                (a, b) -> a.include(b));
+        
+        Point3i dims = compute_grid_dims(grid_bb, prims.getSize(), hagrid.top_density);
+        
+        // Round to the next multiple of 2 on each dimension (in order to align the memory)
+        dims.x = (dims.x % 2) != 0 ? dims.x + 1 : dims.x;
+        dims.y = (dims.y % 2) != 0 ? dims.y + 1 : dims.y;
+        dims.z = (dims.z % 2) != 0 ? dims.z + 1 : dims.z;
+        
+        // Slightly enlarge the bounding box of the grid        
+        grid_bb.enlargeUlps();
+                
+        hagrid.grid().bbox = grid_bb;
+        hagrid.grid().dims = dims;
+        
+        this.hagrid.grid_bbox = grid_bb;
+        this.hagrid.grid_dims = dims;
+        
+        NativeInteger log_dims = new NativeInteger(1);
+        int[] gridd_shift = new int[1];
+        ArrayList<Level2> levels = new ArrayList();
+        
+        // Build top level
+        first_build_iter(hagrid.snd_density, prims, bboxes, hagrid.grid().bbox, dims, log_dims, gridd_shift, levels);
     }
 }

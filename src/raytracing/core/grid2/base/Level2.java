@@ -18,7 +18,7 @@ public class Level2 {
     public int                  num_refs;               ///< Number of references in the level
     public int                  num_kept;               ///< Number of references kept (remaining is split)
     public NativeObject<Cell2>  cells;                ///< Array of cells
-    public NativeObject<Entry2> entries;             ///< Array of voxel map entries
+    public NativeInteger        entries;             ///< Array of voxel map entries
     public int                  num_cells;              ///< Number of cells
     
     @Override

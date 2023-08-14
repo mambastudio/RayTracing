@@ -9,6 +9,7 @@ import coordinate.memory.NativeObject.Element;
 import coordinate.shapes.AlignedBBoxShape;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -207,16 +208,29 @@ public class BoundingBox extends AlignedBBoxShape<Point3f, Vector3f, Ray, Boundi
 
     @Override
     public byte[] getBytes() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ByteBuffer buf = ByteBuffer.allocate(sizeOf());
+        buf.putFloat(minimum.x);
+        buf.putFloat(minimum.y);
+        buf.putFloat(minimum.z);
+        buf.putFloat(maximum.x);
+        buf.putFloat(maximum.y);
+        buf.putFloat(maximum.z);
+        return buf.array();
     }
 
     @Override
     public void putBytes(byte[] bytes) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+        minimum.x = buf.getFloat();
+        minimum.y = buf.getFloat();
+        minimum.z = buf.getFloat();
+        maximum.x = buf.getFloat();
+        maximum.y = buf.getFloat();
+        maximum.z = buf.getFloat();
     }
 
     @Override
     public BoundingBox newInstance() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new BoundingBox();
     }
 }
