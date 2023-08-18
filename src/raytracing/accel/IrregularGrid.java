@@ -9,10 +9,10 @@ import coordinate.generic.raytrace.AbstractAccelerator;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Ray;
-import raytracing.core.grid.base.Grid;
-import raytracing.core.grid.base.Hagrid;
-import raytracing.core.grid.Traverse;
-import raytracing.core.grid.HagridConstruction;
+import raytracing.accel.grid.onheap.base.Grid;
+import raytracing.accel.grid.onheap.base.Hagrid;
+import raytracing.accel.grid.onheap.HagridConstruction;
+import raytracing.accel.grid.onheap.Traverse;
 import raytracing.primitive.TriangleMesh;
 
 /**

@@ -3,28 +3,35 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package test.hagrid;
+package grid;
 
+import coordinate.memory.NativeInteger;
 import coordinate.parser.obj.OBJParser;
+import raytracing.accel.grid.onheap.Build;
 import raytracing.accel.grid.onheap.base.Hagrid;
-import raytracing.accel.grid.onheap.HagridConstruction;
+import raytracing.accel.grid.offheap.NBuild;
+import raytracing.accel.grid.offheap.base.NHagrid;
 import raytracing.primitive.TriangleMesh;
 
 /**
  *
- * @author user
+ * @author jmburu
  */
-public class TestIrregularGrid {
+public class TestGrid {
     public static void main(String... args)
     {
         OBJParser parser = new OBJParser();
         TriangleMesh mesh = new TriangleMesh();
        // parser.read("C:\\Users\\user\\Documents\\3D Scenes\\mori_knob\\testObj.obj", mesh);
-        parser.read("C:\\Users\\user\\Documents\\3D Scenes\\box\\Mori.obj", mesh);
+        parser.read("C:\\Users\\jmburu\\Documents\\GitHub\\RayTracing\\SimpleMesh.obj", mesh);
         
-        HagridConstruction construction = new HagridConstruction(new Hagrid());
-        construction.initialiseGrid(mesh);
+        Build b1 = new Build(new Hagrid());
+        NBuild b2 = new NBuild(new NHagrid());
         
         
+        for(int i = 0; i<4; i++)
+        {            //b1.build_grid(mesh);
+            b2.build_grid(mesh);
+        }
     }
 }
