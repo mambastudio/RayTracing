@@ -9,6 +9,7 @@ import raytracing.accel.grid.GridConstruction;
 import raytracing.accel.grid.onheap.base.Grid;
 import raytracing.accel.grid.onheap.base.Hagrid;
 import raytracing.accel.grid.offheap.NBuild;
+import raytracing.accel.grid.offheap.NMerge;
 import raytracing.accel.grid.offheap.base.NHagrid;
 import raytracing.primitive.TriangleMesh;
 
@@ -17,7 +18,7 @@ import raytracing.primitive.TriangleMesh;
  * @author user
  */
 public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
-    
+    NHagrid nhagrid = new NHagrid();
     public HagridConstruction(Hagrid hagrid)
     {
         super(hagrid);
@@ -30,6 +31,7 @@ public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
         merge_grid();
         //flatten_grid();
         
+                
         return hagrid.grid();
     }
 
@@ -37,7 +39,7 @@ public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
     protected void build_grid(TriangleMesh tris) {
         Build build = new Build(hagrid);
         build.build_grid(tris);
-        NBuild b = new NBuild(new NHagrid());
+        NBuild b = new NBuild(nhagrid);
         b.build_grid(tris);
         System.out.println("finished building");
     }
@@ -46,6 +48,8 @@ public class HagridConstruction extends GridConstruction<Grid, Hagrid>{
     protected void merge_grid() {
         Merge merge = new Merge(hagrid);
         merge.merge_grid();
+        NMerge m = new NMerge(nhagrid);
+        m.merge_grid();
         System.out.println("finished merging");
     }
 

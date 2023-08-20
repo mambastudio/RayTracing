@@ -549,20 +549,22 @@ public class NBuild extends NGridAbstract{
         log_dims.resize(num_top_cells + 1);
         
         count_new_refs(bboxes, new_ref_counts, prims.getSize());  //new references generated based on how many cells each ref overlaps     
-        
-        new_ref_counts.copyToMem(start_emit); //copy to and shift to the right
+                
         int num_new_refs = par.exclusive_scan(new_ref_counts, prims.getSize() + 1, start_emit);  
-                        
+        new_ref_counts.freeMemory();
+        
         // We are creating cells and their references of top level        
         NativeInteger new_ref_ids  = new NativeInteger(2 * num_new_refs); 
         NativeInteger new_cell_ids = new_ref_ids.offsetMemory(num_new_refs);   
         emit_new_refs(bboxes, start_emit, new_ref_ids, new_cell_ids, prims.getSize()); //insert the initial references into the new cells         
-                
+        start_emit.freeMemory();
+        
         // Compute the number of references per cell        
         count_refs_per_cell(new_cell_ids, refs_per_cell, num_new_refs); //simple atomic add
         
         // Compute an independent resolution in each of the top-level cells
         compute_log_dims(refs_per_cell, log_dims, snd_density, num_top_cells);
+        refs_per_cell.freeMemory();
         
         // Find the max sub-level resolution
         grid_shift[0] = par.reduce(log_dims, num_top_cells, log_dims.offsetMemory(num_top_cells), (a, b)->max(a,b));       
@@ -624,19 +626,22 @@ public class NBuild extends NGridAbstract{
                 num_cells + 1, start_cell);               
         
         update_entries(start_cell, entries, num_cells);       
+        start_cell.freeMemory();
         
         // Partition the set of cells into the sets of those which will be split and those which won't        
         NativeInteger tmp_ref_ids  = new NativeInteger(num_refs * 2);
         NativeInteger tmp_cell_ids = tmp_ref_ids.offsetMemory(num_refs);
         int num_sel_refs  = par.partition(ref_ids,  tmp_ref_ids,  num_refs, kept_flags); 
         int num_sel_cells = par.partition(cell_ids, tmp_cell_ids, num_refs, kept_flags);
-        
+        kept_flags.freeMemory();
+                
         if(num_sel_refs != num_sel_cells)
             throw new UnsupportedOperationException("num_sel_refs is not equal to num_sel_cells");
         
         //Swap
         tmp_ref_ids.swap(ref_ids);
         tmp_cell_ids.swap(cell_ids); 
+        tmp_ref_ids.freeMemory();
          
         int num_kept = num_sel_refs;
         levels.get(levels.size()-1).ref_ids  = ref_ids;
@@ -644,7 +649,8 @@ public class NBuild extends NGridAbstract{
         levels.get(levels.size()-1).num_kept = num_kept;
        
         if (num_new_cells == 0) {
-            // Exit here because no new reference will be emitted            
+            // Exit here because no new reference will be emitted 
+            log_dims.freeMemory();
             return false;
         }
         
@@ -680,13 +686,15 @@ public class NBuild extends NGridAbstract{
                 start_split, 
                 new_cell_ids, 
                 new_ref_ids, 
-                num_split);        
+                num_split);     
+        
+        split_masks.freeMemory();
+        start_split.freeMemory();
         
         // Emission of the new cells
         NativeObject<NCell> new_cells   = new NativeObject(NCell.class, num_new_cells + 0);
         NativeInteger new_entries = new NativeInteger(num_new_cells + 1);
         emit_new_cells(entries, cells, new_cells, num_cells);                
-        //new_entries.fill(0);
         
         NLevel level = new NLevel();
         level.ref_ids   = new_ref_ids;         
@@ -727,7 +735,7 @@ public class NBuild extends NGridAbstract{
                 copy_refs(levels.get(i).cell_ids, cell_ids.offsetMemory(off), cell_off, num_kept);
                 //DEBUG_SYNC();
             }
-            levels.get(i).ref_ids = null;
+            levels.get(i).ref_ids.freeMemory();
         }
         
         // Mark the cells at the leaves of the structure as kept
@@ -741,9 +749,9 @@ public class NBuild extends NGridAbstract{
         
         // Compute the insertion position of each cell
         NativeInteger start_cell = new NativeInteger(total_cells + 1);  
-        kept_cells.copyToMem(start_cell);
         int new_total_cells = par.exclusive_scan(kept_cells, total_cells + 1, start_cell);
-                
+        kept_cells.freeMemory();
+        
         // Allocate new cells, and copy only the cells that are kept
         NativeObject<NCell> cells = new NativeObject(NCell.class, new_total_cells);
         for (int i = 0, cell_off = 0; i < num_levels; cell_off += levels.get(i).num_cells, i++) {
@@ -751,7 +759,7 @@ public class NBuild extends NGridAbstract{
             copy_cells(levels.get(i).cells, start_cell, cells, cell_off, num_cells);
             //DEBUG_SYNC();
             //mem.free(levels[i].cells);
-            levels.get(i).cells.dispose();
+            levels.get(i).cells.freeMemory();
         }
         
         NativeInteger entries = new NativeInteger(total_cells);
@@ -762,12 +770,13 @@ public class NBuild extends NGridAbstract{
             copy_entries(levels.get(i).entries, start_cell, entries, off, next_level_off, num_cells);
             //DEBUG_SYNC();
             //mem.free(levels[i].entries);
-            levels.get(i).entries = null;
+            levels.get(i).entries.freeMemory();
         }
         
         // Remap the cell indices in the references (which currently map to incorrect cells)
         remap_refs(cell_ids, start_cell, total_refs);
         //DEBUG_SYNC();
+        start_cell.freeMemory();
         
         // Sort the references by cell (re-use old slots whenever possible)
         NativeInteger tmp_ref_ids  = new NativeInteger(total_refs);
@@ -780,10 +789,13 @@ public class NBuild extends NGridAbstract{
             ref_ids.swap(tmp_ref_ids);           
         if (!cell_ids.equals(new_cell_ids)) 
             cell_ids.swap(tmp_cell_ids);  
+        tmp_ref_ids.freeMemory();
+        tmp_cell_ids.freeMemory();        
         
         // Compute the ranges of references for each cell
         compute_cell_ranges(cell_ids, cells, total_refs);
         //DEBUG_SYNC();
+        cell_ids.freeMemory();
         
         grid.entries = entries;
         grid.ref_ids = ref_ids;
@@ -817,7 +829,7 @@ public class NBuild extends NGridAbstract{
         dims.x = (dims.x % 2) != 0 ? dims.x + 1 : dims.x;
         dims.y = (dims.y % 2) != 0 ? dims.y + 1 : dims.y;
         dims.z = (dims.z % 2) != 0 ? dims.z + 1 : dims.z;
-        
+                
         // Slightly enlarge the bounding box of the grid        
         grid_bb.enlargeUlps();
                 
@@ -833,11 +845,12 @@ public class NBuild extends NGridAbstract{
         
         // Build top level
         first_build_iter(hagrid.snd_density, prims, bboxes, hagrid.grid().bbox, dims, log_dims, gridd_shift, levels);
-         
+        bboxes.freeMemory();
+        
         int iter = 1; //build iterations
         while(build_iter(prims, dims, log_dims, levels, iter)) 
             iter++;   
-        
+                
         concat_levels(levels, hagrid.grid());
     }
 }

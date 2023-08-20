@@ -6,6 +6,10 @@
 package raytracing.accel;
 
 import coordinate.generic.raytrace.AbstractAccelerator;
+import raytracing.accel.grid.offheap.NHagridConstruction;
+import raytracing.accel.grid.offheap.NTraverse;
+import raytracing.accel.grid.offheap.base.NGrid;
+import raytracing.accel.grid.offheap.base.NHagrid;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.BoundingBox;
 import raytracing.core.coordinate.Ray;
@@ -20,22 +24,22 @@ import raytracing.primitive.TriangleMesh;
  * @author user
  */
 public class IrregularGrid implements AbstractAccelerator<Ray, Intersection, TriangleMesh, BoundingBox> {
-    Grid grid = null;
+    NGrid grid = null;
     TriangleMesh mesh = null;
     
     @Override
     public void build(TriangleMesh mesh) {
         this.mesh = mesh;
         
-        Hagrid hagrid = new Hagrid();
-        HagridConstruction construction = new HagridConstruction(hagrid);
+        NHagrid hagrid = new NHagrid();
+        NHagridConstruction construction = new NHagridConstruction(hagrid);
         construction.initialiseGrid(mesh);
         grid = hagrid.grid();
     }
 
     @Override
     public boolean intersect(Ray ray, Intersection isect) {
-        Traverse traverse = new Traverse(grid);
+        NTraverse traverse = new NTraverse(grid);
         return traverse.traverse(ray, isect, mesh);
     }
 

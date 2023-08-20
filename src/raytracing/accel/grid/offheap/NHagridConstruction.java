@@ -24,20 +24,26 @@ public class NHagridConstruction extends GridConstruction<NGrid, NHagrid>{
     @Override
     public NGrid initialiseGrid(TriangleMesh tris) {
         build_grid(tris);
-        
+        merge_grid();
+        //give gc hint to cleanup
+        System.gc();        
         return hagrid.grid();
     }
 
     @Override
     protected void build_grid(TriangleMesh tris) {
         NBuild build = new NBuild(hagrid);
-        //build.build_grid(tris);
+        build.build_grid(tris);
+        System.gc();
         System.out.println("finished building");
     }
 
     @Override
     protected void merge_grid() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        NMerge merge = new NMerge(hagrid);
+        merge.merge_grid();
+        System.gc();
+        System.out.println("finished merging");
     }
 
     @Override
@@ -45,6 +51,4 @@ public class NHagridConstruction extends GridConstruction<NGrid, NHagrid>{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
-    
 }

@@ -546,7 +546,7 @@ public class Build extends GridAbstract {
         
         new_ref_counts.copyTo(start_emit).shiftRight(1); //copy to and shift to the right
         int num_new_refs = start_emit.prefixSum(0, prims.getSize() + 1); 
-                
+               
         // We are creating cells and their references of top level        
         IntegerList new_ref_ids  = new IntegerList(new int[2 * num_new_refs]); 
         IntegerList new_cell_ids = new_ref_ids.getSubListFrom(num_new_refs);   
@@ -641,6 +641,7 @@ public class Build extends GridAbstract {
         levels.back().cell_ids = cell_ids;
         levels.back().num_kept = num_kept;
         
+                
         if (num_new_cells == 0) {
             // Exit here because no new reference will be emitted            
             return false;
@@ -689,6 +690,8 @@ public class Build extends GridAbstract {
                 
         for(int i = 0; i<num_new_cells + 1; i++)
             new_entries[i] = new Entry();
+        
+        
                         
         Level level = new Level();
         level.ref_ids   = new_ref_ids;         
@@ -840,7 +843,7 @@ public class Build extends GridAbstract {
         while(build_iter(prims, dims, log_dims, levels, iter)) 
             iter++;   
         System.out.println("iteration " +iter); 
-        
         concat_levels(levels, hagrid.grid());
+        System.out.println(levels);
     }
 }

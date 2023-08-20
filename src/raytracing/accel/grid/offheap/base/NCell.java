@@ -28,6 +28,12 @@ public class NCell implements Element<NCell>{
         this.max = max.copy();
         this.end = end;
     }
+    
+    @Override
+    public final String toString() {
+        return String.format("(min %1s, max %1s, begin %5d, end %5d) \n", min, max, begin, end);
+        //return Boolean.toString(hasReference());
+    }
 
     @Override
     public int sizeOf() {
