@@ -31,6 +31,8 @@ public class IrregularGrid implements AbstractAccelerator<Ray, Intersection, Tri
     public void build(TriangleMesh mesh) {
         this.mesh = mesh;
         
+        if(grid != null) grid.freeMemoryAll();
+        
         NHagrid hagrid = new NHagrid();
         NHagridConstruction construction = new NHagridConstruction(hagrid);
         construction.initialiseGrid(mesh);

@@ -32,6 +32,14 @@ public class NGrid implements GridMap{
     public int shift;               ///< Amount of bits to shift to get from the deepest level to the top-level
     public NativeInteger offsets;     ///< Offset to each level of the voxel map octree
     
+    public void freeMemoryAll()
+    {
+        if(entries != null) entries.freeMemory();
+        if(ref_ids != null) ref_ids.freeMemory();
+        if(cells != null) cells.freeMemory();
+        if(offsets != null) offsets.freeMemory();
+    }
+    
     public Vector3f grid_inv()              {return new Vector3f(grid_dims()).div(bbox.extents());}   
     public Vector3f cell_size()             {return bbox.extents().div(new Vector3f(grid_dims()));}
     public Point3i grid_dims()              {return dims.leftShift(shift);}
