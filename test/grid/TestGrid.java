@@ -5,7 +5,7 @@
  */
 package grid;
 
-import coordinate.memory.NativeInteger;
+import coordinate.memory.nativememory.NativeInteger;
 import coordinate.parser.obj.OBJParser;
 import raytracing.accel.grid.onheap.Build;
 import raytracing.accel.grid.onheap.base.Hagrid;

@@ -5,10 +5,10 @@
  */
 package raytracing.accel.grid.offheap;
 
-import coordinate.memory.NativeInteger;
-import coordinate.memory.NativeObject;
-import coordinate.memory.algorithms.SerialNativeIntegerAlgorithm;
-import coordinate.memory.algorithms.SerialNativeObjectAlgorithm;
+import coordinate.memory.nativememory.NativeInteger;
+import coordinate.memory.nativememory.NativeObject;
+import coordinate.memory.nativememory.algorithm.SerialNativeIntegerAlgorithm;
+import coordinate.memory.nativememory.algorithm.SerialNativeObjectAlgorithm;
 import static java.lang.Math.cbrt;
 import static java.lang.Math.max;
 import static java.lang.Math.min;

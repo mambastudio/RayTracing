@@ -5,8 +5,8 @@
  */
 package raytracing.accel.grid.offheap;
 
-import coordinate.memory.NativeInteger;
-import coordinate.memory.NativeObject;
+import coordinate.memory.nativememory.NativeInteger;
+import coordinate.memory.nativememory.NativeObject;
 import java.util.function.BiConsumer;
 import raytracing.core.Intersection;
 import raytracing.core.coordinate.Point3i;

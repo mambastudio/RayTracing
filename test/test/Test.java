@@ -5,7 +5,7 @@
  */
 package test;
 
-import coordinate.memory.NativeInteger;
+import coordinate.memory.nativememory.NativeInteger;
 import coordinate.parser.obj.OBJParser;
 import java.util.Arrays;
 import java.util.Comparator;

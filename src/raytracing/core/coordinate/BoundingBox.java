@@ -5,7 +5,7 @@
  */
 package raytracing.core.coordinate;
 
-import coordinate.memory.NativeObject.Element;
+import coordinate.memory.nativememory.NativeObject.Element;
 import coordinate.shapes.AlignedBBoxShape;
 import static java.lang.Math.max;
 import static java.lang.Math.min;

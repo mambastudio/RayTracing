@@ -5,7 +5,7 @@
  */
 package raytracing.accel.grid.offheap.base;
 
-import coordinate.memory.NativeInteger.IntElement;
+import coordinate.memory.nativememory.NativeInteger.IntElement;
 import coordinate.utility.BitUtility;
 
 /**

@@ -5,7 +5,7 @@
  */
 package raytracing.accel.grid.offheap.base;
 
-import coordinate.memory.NativeObject.Element;
+import coordinate.memory.nativememory.NativeObject.Element;
 import java.nio.ByteBuffer;
 import raytracing.core.coordinate.Point3i;
 
