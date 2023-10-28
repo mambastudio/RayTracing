@@ -15,8 +15,8 @@ import raytracing.accel.grid.HagridSetup;
  * @author user
  */
 public class NHagrid implements HagridSetup<NGrid> {
-    public float top_density = 0.12f;
-    public float snd_density = 1.0f;
+    public float top_density = 1.3f;
+    public float snd_density = 12.0f;
     public float alpha = 0.995f;
     public int exp_iters = 3;
     
